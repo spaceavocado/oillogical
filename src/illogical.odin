@@ -33,7 +33,7 @@ main :: proc() {
 
     reference, _ := new_reference("address.city")
 
-    options := Serialization_Options_Collection{
+    options := Serialize_Options_Collection{
         escaped_operators = make(map[string]bool),
         escape_character = "\\",
     }

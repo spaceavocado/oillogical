@@ -4,22 +4,22 @@ import "core:fmt"
 
 Collection :: struct {
     data: [dynamic]Evaluable,
-    options: Serialization_Options_Collection,
+    options: Serialize_Options_Collection,
 }
 
-Serialization_Options_Collection :: struct {
+Serialize_Options_Collection :: struct {
     escaped_operators: map[string]bool,
     escape_character: string,
 }
 
-new_collection :: proc(items: ..Evaluable, options: ^Serialization_Options_Collection = nil) -> (Evaluable, Error) {
+new_collection :: proc(items: ..Evaluable, options: ^Serialize_Options_Collection = nil) -> (Evaluable, Error) {
     if len(items) == 0 {
         return {}, .Invalid_Collection
     }
 
     c := Collection{
         data = make([dynamic]Evaluable, len(items)),
-        options = options^ if options != nil else Serialization_Options_Collection{
+        options = options^ if options != nil else Serialize_Options_Collection{
             escaped_operators = make(map[string]bool),
             escape_character = "\\",
         },
@@ -100,7 +100,7 @@ to_string_collection :: proc(collection: ^Collection) -> string {
     return fmt.tprintf("[%s]", result)
 }
 
-_should_be_escaped :: proc(input: Primitive, options: ^Serialization_Options_Collection) -> bool {
+_should_be_escaped :: proc(input: Primitive, options: ^Serialize_Options_Collection) -> bool {
     if input == nil {
         return false
     }
@@ -114,6 +114,6 @@ _should_be_escaped :: proc(input: Primitive, options: ^Serialization_Options_Col
     return false;
 }
 
-_escape_operator :: proc(operator: string, options: ^Serialization_Options_Collection) -> string {
+_escape_operator :: proc(operator: string, options: ^Serialize_Options_Collection) -> string {
     return fmt.tprintf("%s%s", options.escape_character, operator)
 }

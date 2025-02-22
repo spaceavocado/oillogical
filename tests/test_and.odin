@@ -73,11 +73,11 @@ test_and_simplify :: proc(t: ^testing.T) {
 		{[]illogical.Evaluable{val(true), val(false)}, false, nil},
 		{[]illogical.Evaluable{ref("RefA"), val(true)}, true, nil},
 		{[]illogical.Evaluable{ref("Missing"), val(true)}, nil, ref("Missing")},
-		{[]illogical.Evaluable{ref("Missing"), ref("Missing")}, nil, and([]illogical.Evaluable{ref("Missing"), ref("Missing")})},
+		{[]illogical.Evaluable{ref("Missing"), ref("Missing")}, nil, and(ref("Missing"), ref("Missing"))},
 	}
 
 	for &test in tests {
-        e := and(test.input)
+        e := and(..test.input)
 		value, self := illogical.simplify(&e, &ctx)
 
 		testing.expectf(t, matches_evaluated(value, test.value), "input (%v): expected %v, got %v", test.input, test.value, value)

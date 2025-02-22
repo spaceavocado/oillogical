@@ -45,8 +45,7 @@ simplify_nor :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluab
 	}
 
 	if len(simplified) == 1 {
-        new_not, _ := new_not(not_operator, simplified[0])
-		return nil, new_not
+		return nil, new_not(not_operator, simplified[0])
 	}
 
     new_nor, _ := new_nor(operator, not_operator, ..simplified[:])

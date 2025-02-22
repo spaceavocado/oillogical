@@ -51,17 +51,7 @@ new_reference :: proc(
         address = address,
         path = _trim_data_type(address),
         data_type = data_type,
-        serialize_options = serialize_options^ if serialize_options != nil else Serialize_Options_Reference{
-            from = proc(operand: string) -> (string, Error) {
-                if len(operand) > 1 && strings.has_prefix(operand, "$") {
-                    return operand[1:], .None
-            }
-            return "", .Invalid_Operand
-        },
-        to = proc(operand: string) -> string {
-            return fmt.tprintf("$%s", operand)
-        },
-        },
+        serialize_options = serialize_options^ if serialize_options != nil else default_serialize_options_reference(),
         simplify_options = simplify_options^ if simplify_options != nil else Simplify_Options_Reference{
             ignored_paths = make([dynamic]string),
             ignored_paths_rx = make([dynamic]regex.Regular_Expression),
@@ -104,6 +94,20 @@ serialize_reference :: proc(reference: ^Reference) -> Primitive {
 
 to_string_reference :: proc(reference: ^Reference) -> string {
     return fmt.tprintf("{{%s}}", reference.address)
+}
+
+default_serialize_options_reference :: proc() -> Serialize_Options_Reference {
+    return Serialize_Options_Reference{
+        from = proc(operand: string) -> (string, Error) {
+            if len(operand) > 1 && strings.has_prefix(operand, "$") {
+                return operand[1:], .None
+            }
+            return "", .Invalid_Operand
+        },
+        to = proc(operand: string) -> string {
+            return fmt.tprintf("$%s", operand)
+        }
+    }
 }
 
 _evaluate_reference :: proc(ctx: ^FlattenContext, path: string, data_type: Data_Type) -> (bool, string, Primitive, Error) {

@@ -2,9 +2,9 @@ package illogical
 
 import "core:fmt"
 
-new_not :: proc(operator: string, operand: Evaluable) -> (Evaluable, Error) {
+new_not :: proc(operator: string, operand: Evaluable) -> Evaluable {
     simplify_handler : simplify_handler_base = simplify_not
-    return new_logical(operator, "NOT", "N/A", "N/A", handler_not, simplify_handler, operand), nil
+    return new_logical(operator, "NOT", "N/A", "N/A", handler_not, simplify_handler, operand)
 }
 
 handler_not :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Error) {
@@ -23,8 +23,7 @@ simplify_not :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluab
     }
 
     if e != nil {
-        new_not, _ := new_not(operator, e)
-        return nil, new_not
+        return nil, new_not(operator, e)
     }
 
 	return nil, nil

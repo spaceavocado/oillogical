@@ -2,47 +2,7 @@ package illogical_test
 
 import "core:fmt"
 
-import illogical "../src"
-
-ref :: proc(address: string) -> illogical.Evaluable {
-    e, _ := illogical.new_reference(address)
-    return e
-}
-
-val :: proc(data: illogical.Primitive) -> illogical.Evaluable {
-    e := illogical.new_value(data)
-    return e
-}
-
-col :: proc(items: ..illogical.Evaluable) -> illogical.Evaluable {
-    e, _ := illogical.new_collection(..items)
-    return e
-}
-
-and := proc(operands: []illogical.Evaluable) -> illogical.Evaluable {
-    e, _ := illogical.new_and("AND", ..operands)
-    return e
-}
-
-or := proc(operands: []illogical.Evaluable) -> illogical.Evaluable {
-    e, _ := illogical.new_or("OR", ..operands)
-    return e
-}
-
-not := proc(operand: illogical.Evaluable) -> illogical.Evaluable {
-    e, _ := illogical.new_not("NOT", operand)
-    return e
-}
-
-nor := proc(operands: []illogical.Evaluable) -> illogical.Evaluable {
-    e, _ := illogical.new_nor("NOR", "NOT", ..operands)
-    return e
-}
-
-xor := proc(operands: []illogical.Evaluable) -> illogical.Evaluable {
-    e, _ := illogical.new_xor("XOR", "NOT", "NOR", ..operands)
-    return e
-}
+@require import illogical "../src"
 
 fprint_evaluable :: proc(e: illogical.Evaluable) -> string {
     if e == nil {
@@ -58,8 +18,6 @@ fprint_any :: proc (input: any) -> string {
 }
 
 fprint :: proc { fprint_evaluable, fprint_any }
-
-
 
 matches_primitive :: proc(evaluated: illogical.Evaluated, expected: illogical.Evaluated) -> bool {
     if a, ok := evaluated.(illogical.Primitive); ok {

@@ -4,20 +4,10 @@ import "core:fmt"
 import "core:reflect"
 import "base:runtime"
 import "core:mem"
-
-Error :: enum {
-    None = 0,
-	Invalid_Collection,
-	Invalid_Operand,
-    Invalid_Data_Type,
-    Invalid_Data_Type_Conversion,
-	Invalid_Logical_Expression,
-	Invalid_Evaluated_Logical_Operand,
-}
-
+import "core:log"
 // Evaluation expression kind.
 Kind :: enum {
-    Unknown,
+    // Unknown,
 	Value,
 	Reference,
 	Collection,
@@ -32,10 +22,10 @@ Kind :: enum {
 	Ge,
 	Lt,
 	Le,
-	Nil,
+	None,
 	Present,
 	In,
-	Nin,
+	Not_In,
 	Overlap,
 	Prefix,
 	Suffix,
@@ -68,6 +58,7 @@ Context :: map[string]Primitive
 FlattenContext :: distinct map[string]Primitive
 
 Evaluated :: union{Primitive, Array}
+Expression :: Evaluated
 // Evaluated :: union{Primitive, Array}
 // Expression :: [dynamic]Mixed
 // Serialized :: union{Primitive, Expression}
@@ -163,7 +154,7 @@ to_string :: proc(evaluable: ^Evaluable) -> string {
 	case Logical:
 		return to_string_logical(&e)
 	case:
-		fmt.println(evaluable)
+		log.info(typeid_of(type_of(&e)))
 		panic("Unsupported evaluable type")
     }
 }
@@ -174,18 +165,18 @@ to_string :: proc(evaluable: ^Evaluable) -> string {
 destroy_evaluable :: proc(evaluable: ^Evaluable) {
     #partial switch &e in evaluable {
 	case Collection:
-        for &item in e.data {
-            destroy_evaluable(&item)
-        }
+		for &item in e.data {
+			destroy_evaluable(&item)
+		}
 		delete(e.data)
 	case Comparison:
-		for &item in e.operands {
-			destroy_evaluable(&item)
+		for &operand in e.operands {
+			destroy_evaluable(&operand)
 		}
 		delete(e.operands)
 	case Logical:
-		for &item in e.operands {
-			destroy_evaluable(&item)
+		for &operand in e.operands {
+			destroy_evaluable(&operand)
 		}
 		delete(e.operands)
     }	

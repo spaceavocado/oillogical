@@ -70,7 +70,6 @@ test_collection_simplify :: proc(t: ^testing.T) {
     }
     defer delete(ctx)
 
-
 	tests := []struct {
 		input: []illogical.Evaluable,
 		value: illogical.Evaluated,
@@ -101,7 +100,7 @@ test_collection_simplify :: proc(t: ^testing.T) {
 
 @test
 test_collection_serialize :: proc(t: ^testing.T) {
-	options := illogical.Serialization_Options_Collection{
+	options := illogical.Serialize_Options_Collection{
 		escaped_operators= map[string]bool{"=="= true},
 		escape_character=  "\\",
 	}
@@ -158,7 +157,7 @@ test_collection_to_string :: proc(t: ^testing.T) {
 
 @test
 test_collection_should_be_escaped :: proc(t: ^testing.T) {
-	options := illogical.Serialization_Options_Collection{
+	options := illogical.Serialize_Options_Collection{
 		escaped_operators= map[string]bool{"=="= true},
 		escape_character=  "\\",
 	}
@@ -185,7 +184,7 @@ test_collection_should_be_escaped :: proc(t: ^testing.T) {
 
 @test
 test_collection_escape_operator :: proc(t: ^testing.T) {
-	options := illogical.Serialization_Options_Collection{
+	options := illogical.Serialize_Options_Collection{
 		escaped_operators= map[string]bool{"=="= true},
 		escape_character=  "*",
 	}

@@ -64,8 +64,7 @@ simplify_xor :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluab
 
 	if len(simplified) == 1 {
         if truthy == 1 {
-            new_not, _ := new_not(not_operator, simplified[0])
-		    return nil, new_not
+		    return nil, new_not(not_operator, simplified[0])
         }
 		return nil, simplified[0]
 	}
