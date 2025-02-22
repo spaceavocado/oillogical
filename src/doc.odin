@@ -1,14 +1,5 @@
 /*
-Illogical is a data manipulation and transformation library.
-
-It is designed to be used in conjunction with a templating engine to
-transform data from one format to another.
-
-It is built on top of the Odin programming language.
-
-It is designed to be used in conjunction with a templating engine to
-transform data from one format to another.
-
-
+A micro conditional engine used to parse the logical and comparison expressions,
+evaluate an expression in data context, and provide access to a text form of the given expression.
 */
 package illogical

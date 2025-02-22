@@ -14,11 +14,10 @@ test_and_new :: proc(t: ^testing.T) {
     testing.expectf(t, err == .Invalid_Logical_Expression, "input (%v): expected %v, got %v", []illogical.Evaluable{}, err)   
 }
 
-
 @test
 test_and_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
-        "RefA" = 10,
+    ctx := illogical.Flatten_Context{
+		"RefA" = 10,
     }
     defer delete(ctx)
 
@@ -59,7 +58,7 @@ test_and_handler :: proc(t: ^testing.T) {
 
 @test
 test_and_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"RefA" = true,
 	}
 	defer delete(ctx)

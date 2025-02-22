@@ -9,7 +9,7 @@ import illogical "../src"
 
 @test
 test_logical_evaluate :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = 10,
     }
     defer delete(ctx)
@@ -23,10 +23,10 @@ test_logical_evaluate :: proc(t: ^testing.T) {
 		{"Unknown", []illogical.Evaluable{val(false), val(false)}, false},
 	}
 
-    handler := proc(ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
+    handler := proc(ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
 		return illogical.evaluate(&operands[0], ctx)
 	}
-	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
+	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
         return nil, nil
     }
 
@@ -61,7 +61,7 @@ test_logical_evaluate :: proc(t: ^testing.T) {
 
 @test
 test_logical_simplify :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{}
+    ctx := illogical.Flatten_Context{}
     defer delete(ctx)
 
 	tests := []struct {
@@ -72,10 +72,10 @@ test_logical_simplify :: proc(t: ^testing.T) {
 		{"Unknown", []illogical.Evaluable{val(true), val(true)}, true},
 	}
 
-	handler := proc(ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
+	handler := proc(ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
 		return true, nil
 	}
-	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
+	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
         return true, nil
     }
 
@@ -101,10 +101,10 @@ test_logical_serialize :: proc(t: ^testing.T) {
 		{"X", []illogical.Evaluable{val("e1")}, illogical.Array{"X", "e1"}},
 	}
 
-    handler := proc(ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
+    handler := proc(ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
 		return true, nil
 	}
-	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
+	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
         return true, nil
     }
 
@@ -116,8 +116,8 @@ test_logical_serialize :: proc(t: ^testing.T) {
 
         illogical.destroy_evaluable(&l)
 
-        delete(test.expected)
-        delete(output.(illogical.Array))
+        illogical.destroy_evaluated(test.expected)
+        illogical.destroy_evaluated(output)
 	}
 }
 
@@ -132,10 +132,10 @@ test_logical_to_string :: proc(t: ^testing.T) {
 		{"AND", []illogical.Evaluable{val("e1"), val("e2"), val("e1")}, "(\"e1\" AND \"e2\" AND \"e1\")"},
 	}
 
-    handler := proc(ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
+    handler := proc(ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Error) {
 		return true, nil
 	}
-	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.FlattenContext, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
+	simplify_handler: illogical.simplify_handler_base = proc(operator: string, ctx: ^illogical.Flatten_Context, operands: []illogical.Evaluable) -> (illogical.Evaluated, illogical.Evaluable) {
         return true, nil
     }
 
@@ -151,7 +151,7 @@ test_logical_to_string :: proc(t: ^testing.T) {
 
 @test
 test_logical_evaluate_operand :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = 10,
     }
     defer delete(ctx)

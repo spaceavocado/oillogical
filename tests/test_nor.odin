@@ -16,7 +16,7 @@ test_nor_new :: proc(t: ^testing.T) {
 
 @test
 test_nor_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = 10,
     }
     defer delete(ctx)
@@ -58,7 +58,7 @@ test_nor_handler :: proc(t: ^testing.T) {
 
 @test
 test_nor_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"RefA" = true,
 	}
 	defer delete(ctx)

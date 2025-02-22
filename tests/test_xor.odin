@@ -16,7 +16,7 @@ test_xor_new :: proc(t: ^testing.T) {
 
 @test
 test_xor_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "refA" = 10,
     }
     defer delete(ctx)
@@ -64,7 +64,7 @@ test_xor_handler :: proc(t: ^testing.T) {
 
 @test
 test_xor_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"refA" = true,
 	}
 	defer delete(ctx)

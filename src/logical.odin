@@ -8,13 +8,13 @@ Logical :: struct {
     not_operator: string,
     nor_operator: string,
 	operands: [dynamic]Evaluable,
-	handler:  proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Error),
+	handler:  proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Error),
     simplify_handler: simplify_handler,
 }
 
-simplify_handler_base :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Evaluable)
-simplify_handler_with_not :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluable, not_operator: string) -> (Evaluated, Evaluable)
-simplify_handler_with_not_nor :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluable, not_operator: string, nor_operator: string) -> (Evaluated, Evaluable)
+simplify_handler_base :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Evaluable)
+simplify_handler_with_not :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable, not_operator: string) -> (Evaluated, Evaluable)
+simplify_handler_with_not_nor :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable, not_operator: string, nor_operator: string) -> (Evaluated, Evaluable)
 simplify_handler :: union{ simplify_handler_base, simplify_handler_with_not, simplify_handler_with_not_nor }
 
 new_logical :: proc(
@@ -22,7 +22,7 @@ new_logical :: proc(
     operator: string,
     not_operator: string,
     nor_operator: string,
-    handler: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Error),
+    handler: proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Error),
     simplify_handler: simplify_handler,
     operands: ..Evaluable,
 ) -> Evaluable {
@@ -41,11 +41,11 @@ new_logical :: proc(
 	return l
 }
 
-evaluate_logical :: proc(logical: ^Logical, ctx: ^FlattenContext) -> (Evaluated, Error) {
+evaluate_logical :: proc(logical: ^Logical, ctx: ^Flatten_Context) -> (Evaluated, Error) {
 	return logical.handler(ctx, logical.operands[:])
 }
 
-simplify_logical :: proc(logical: ^Logical, ctx: ^FlattenContext) -> (Evaluated, Evaluable) {
+simplify_logical :: proc(logical: ^Logical, ctx: ^Flatten_Context) -> (Evaluated, Evaluable) {
     switch simplify_handler in logical.simplify_handler {
         case simplify_handler_base:
             return simplify_handler(logical.operator, ctx, logical.operands[:])
@@ -78,7 +78,7 @@ to_string_logical :: proc(logical: ^Logical) -> string {
     return fmt.tprintf("%s)", res)
 }
 
-evaluate_logical_operand :: proc(e: ^Evaluable, ctx: ^FlattenContext) -> (bool, Error) {
+evaluate_logical_operand :: proc(e: ^Evaluable, ctx: ^Flatten_Context) -> (bool, Error) {
     res, err := evaluate(e, ctx)
     if err != nil {
         return false, err

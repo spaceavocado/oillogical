@@ -3,7 +3,7 @@ package illogical
 import "core:strings"
 import "core:fmt"
 
-DEFAULT_OPERATOR_MAP :: proc() -> map[Kind]string {
+create_default_operator_map :: proc() -> map[Kind]string {
     m := make(map[Kind]string)
 
     m[.And]     = "AND"
@@ -53,7 +53,7 @@ Parser :: struct {
 new_parser :: proc(
     operator_map: ^map[Kind]string = nil,
 ) -> Parser {
-    operator_map := operator_map != nil ? operator_map^ : DEFAULT_OPERATOR_MAP()
+    operator_map := operator_map != nil ? operator_map^ : create_default_operator_map()
     defer delete(operator_map)
 
     escaped_operators := make(map[string]bool, len(operator_map))
@@ -65,7 +65,7 @@ new_parser :: proc(
 
     return Parser{
         operator_expression_factory = create_operator_expression_factory(&operator_map),
-        serialize_options_reference = default_serialize_options_reference(),
+        serialize_options_reference = create_default_serialize_options_reference(),
         serialize_options_collection = Serialize_Options_Collection{
             escape_character = "\\",
             escaped_operators = escaped_operators,
@@ -261,7 +261,4 @@ to_reference_addr :: proc(input: Primitive, options: ^Serialize_Options_Referenc
 
 destroy_parser :: proc(parser: ^Parser) {
     delete(parser.operator_expression_factory)
-    // delete(parser.serialize_options_collection)
-    // delete(parser.serialize_options_reference)
-    // delete(parser.simplify_options_reference)
 }

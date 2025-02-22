@@ -51,16 +51,5 @@ matches_evaluated :: proc(evaluated: illogical.Evaluated, expected: illogical.Ev
         return false
     }
 
-    for i in 0..<len(evaluated_collection) {
-        if a, ok := illogical.as_equatable_primitive(evaluated_collection[i]); ok {
-            if b, ok := illogical.as_equatable_primitive(expected_collection[i]); ok {
-                if a == b {
-                    continue
-                }
-            }
-        }
-        return false
-    }
-
-    return true
+    return fmt.tprintf("%v", evaluated_collection) == fmt.tprintf("%v", expected_collection)
 }

@@ -4,10 +4,8 @@ import "core:fmt"
 import "core:reflect"
 import "base:runtime"
 import "core:mem"
-import "core:log"
-// Evaluation expression kind.
+
 Kind :: enum {
-    // Unknown,
 	Value,
 	Reference,
 	Collection,
@@ -31,13 +29,15 @@ Kind :: enum {
 	Suffix,
 }
 
-// Operator mapping represents a map between an expression kind and the actual
-// text literal denoting an expression.
-//
-// Example:
-// ["==", 1, 1] to be mapped as EQ expression would be represented as:
-//
-// map[Kind]string{ Eq: "==" }
+/*
+	Operator mapping represents a map between an expression kind and the actual
+	text literal denoting an expression.
+
+	Example:
+		["==", 1, 1] to be mapped as EQ expression would be represented as:
+
+		map[Kind]string{ Eq: "==" }
+*/
 OperatorMapping :: map[Kind]string
 
 Integer :: int
@@ -54,14 +54,10 @@ Primitive :: union{
 	Array,
 }
 
-Context :: map[string]Primitive
-FlattenContext :: distinct map[string]Primitive
-
 Evaluated :: union{Primitive, Array}
-Expression :: Evaluated
-// Evaluated :: union{Primitive, Array}
-// Expression :: [dynamic]Mixed
-// Serialized :: union{Primitive, Expression}
+
+Context :: map[string]Primitive
+Flatten_Context :: distinct map[string]Primitive
 
 Evaluable :: union {
 	Value,
@@ -71,17 +67,17 @@ Evaluable :: union {
 	Logical,
 }
 
-_evaluate_with_context :: proc(evaluable: ^Evaluable, ctx: Context) -> (Evaluated, Error) {
-	flatten := flattenContext(ctx)
-	return _evaluate_with_flatten_context(evaluable, &flatten)
+evaluate_with_context :: proc(evaluable: ^Evaluable, ctx: Context) -> (Evaluated, Error) {
+	flatten := flatten_context(ctx)
+	return evaluate_with_flatten_context(evaluable, &flatten)
 }
 
-_evaluate_with_any_context :: proc(evaluable: ^Evaluable, ctx: any) -> (Evaluated, Error) {
-	flatten := flattenContext(ctx)
-	return _evaluate_with_flatten_context(evaluable, &flatten)
+evaluate_with_any_context :: proc(evaluable: ^Evaluable, ctx: any) -> (Evaluated, Error) {
+	flatten := flatten_context(ctx)
+	return evaluate_with_flatten_context(evaluable, &flatten)
 }
 
-_evaluate_with_flatten_context :: proc(evaluable: ^Evaluable, ctx: ^FlattenContext) -> (Evaluated, Error) {
+evaluate_with_flatten_context :: proc(evaluable: ^Evaluable, ctx: ^Flatten_Context) -> (Evaluated, Error) {
 	#partial switch &e in evaluable {
 	case Value:
 		return evaluate_value(&e), .None
@@ -98,14 +94,14 @@ _evaluate_with_flatten_context :: proc(evaluable: ^Evaluable, ctx: ^FlattenConte
 	}
 }
 
-evaluate :: proc{ _evaluate_with_context, _evaluate_with_any_context, _evaluate_with_flatten_context }
+evaluate :: proc{ evaluate_with_context, evaluate_with_any_context, evaluate_with_flatten_context }
 
 simplify_with_context :: proc(evaluable: ^Evaluable, ctx: any) -> (Evaluated, Evaluable) {
-	flatten := flattenContext(ctx)
+	flatten := flatten_context(ctx)
     return simplify_with_flatten_context(evaluable, &flatten)
 }
 
-simplify_with_flatten_context :: proc(evaluable: ^Evaluable, ctx: ^FlattenContext) -> (Evaluated, Evaluable) {
+simplify_with_flatten_context :: proc(evaluable: ^Evaluable, ctx: ^Flatten_Context) -> (Evaluated, Evaluable) {
     #partial switch &e in evaluable {
     case Value:
         return simplify_value(&e), nil
@@ -154,7 +150,6 @@ to_string :: proc(evaluable: ^Evaluable) -> string {
 	case Logical:
 		return to_string_logical(&e)
 	case:
-		log.info(typeid_of(type_of(&e)))
 		panic("Unsupported evaluable type")
     }
 }
@@ -180,6 +175,27 @@ destroy_evaluable :: proc(evaluable: ^Evaluable) {
 		}
 		delete(e.operands)
     }	
+}
+
+destroy_evaluated :: proc(a: Evaluated) {
+	if p, ok := a.(Primitive); ok {
+		destroy_primitive(p)
+	}
+	if arr, ok := a.(Array); ok {
+		for item in arr {
+			destroy_primitive(item)
+		}
+		delete(arr)
+	}
+}
+
+destroy_primitive :: proc(a: Primitive) {
+	if arr, ok := a.(Array); ok {
+		for item in arr {
+			destroy_primitive(item)
+		}
+		delete(arr)
+	}
 }
 
 new_primitive :: proc(a: Primitive) -> Primitive {

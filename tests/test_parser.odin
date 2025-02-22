@@ -9,7 +9,7 @@ import "core:log"
 import illogical "../src"
 
 @test
-test_value :: proc(t: ^testing.T) {
+test_parse_value :: proc(t: ^testing.T) {
 	parser := illogical.new_parser()
 	defer illogical.destroy_parser(&parser)
 	tests := []struct {
@@ -31,7 +31,7 @@ test_value :: proc(t: ^testing.T) {
 }
 
 @test
-test_reference :: proc(t: ^testing.T) {
+test_parse_reference :: proc(t: ^testing.T) {
 	parser := illogical.new_parser()
 	defer illogical.destroy_parser(&parser)
 	tests := []struct {
@@ -50,8 +50,8 @@ test_reference :: proc(t: ^testing.T) {
 }
 
 @test
-test_collection :: proc(t: ^testing.T) {
-    operator_map := illogical.DEFAULT_OPERATOR_MAP()
+test_parse_collection :: proc(t: ^testing.T) {
+    operator_map := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&operator_map)
 	defer illogical.destroy_parser(&parser)
 	tests := []struct {
@@ -80,8 +80,8 @@ test_collection :: proc(t: ^testing.T) {
 }
 
 @test
-test_comparison :: proc(t: ^testing.T) {
-    operator_map := illogical.DEFAULT_OPERATOR_MAP()
+test_parse_comparison :: proc(t: ^testing.T) {
+    operator_map := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&operator_map)
 	defer illogical.destroy_parser(&parser)
 
@@ -115,8 +115,8 @@ test_comparison :: proc(t: ^testing.T) {
 }
 
 @test
-test_logical :: proc(t: ^testing.T) {
-	operator_map := illogical.DEFAULT_OPERATOR_MAP()
+test_parse_logical :: proc(t: ^testing.T) {
+	operator_map := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&operator_map)
 	defer illogical.destroy_parser(&parser)
 
@@ -143,8 +143,8 @@ test_logical :: proc(t: ^testing.T) {
 }
 
 @test
-test_invalid :: proc(t: ^testing.T) {
-	opts := illogical.DEFAULT_OPERATOR_MAP()
+test_parse_invalid :: proc(t: ^testing.T) {
+	opts := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&opts)
 	defer illogical.destroy_parser(&parser)
 

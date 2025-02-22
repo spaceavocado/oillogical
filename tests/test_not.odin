@@ -9,7 +9,7 @@ import illogical "../src"
 
 @test
 test_not_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = 10,
     }
     defer delete(ctx)
@@ -47,7 +47,7 @@ test_not_handler :: proc(t: ^testing.T) {
 
 @test
 test_not_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"RefA" = true,
 	}
 	defer delete(ctx)

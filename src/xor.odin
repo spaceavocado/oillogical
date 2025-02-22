@@ -11,7 +11,7 @@ new_xor :: proc(operator: string, not_operator: string, nor_operator: string, op
     return new_logical(operator, "XOR", not_operator, nor_operator, handler_xor, simplify_handler, ..operands), nil
 }
 
-handler_xor :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Error) {
+handler_xor :: proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Error) {
     xor: bool
 
     for &e, i in operands {
@@ -37,7 +37,7 @@ handler_xor :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, 
 	return new_primitive(xor), nil
 }
 
-simplify_xor :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluable, not_operator: string, nor_operator: string) -> (Evaluated, Evaluable) {
+simplify_xor :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable, not_operator: string, nor_operator: string) -> (Evaluated, Evaluable) {
     simplified := make([dynamic]Evaluable)
     defer delete(simplified)
     

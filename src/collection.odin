@@ -32,7 +32,7 @@ new_collection :: proc(items: ..Evaluable, options: ^Serialize_Options_Collectio
     return c, .None
 }
 
-evaluate_collection :: proc(collection: ^Collection, ctx: ^FlattenContext) -> ([dynamic]Primitive, Error) {
+evaluate_collection :: proc(collection: ^Collection, ctx: ^Flatten_Context) -> ([dynamic]Primitive, Error) {
     result := make([dynamic]Primitive, len(collection.data))
 
     for &item, i in collection.data {
@@ -53,7 +53,7 @@ evaluate_collection :: proc(collection: ^Collection, ctx: ^FlattenContext) -> ([
     return result, .None
 }
 
-simplify_collection :: proc(collection: ^Collection, ctx: ^FlattenContext) -> ([dynamic]Primitive, Evaluable) {
+simplify_collection :: proc(collection: ^Collection, ctx: ^Flatten_Context) -> ([dynamic]Primitive, Evaluable) {
     result := make([dynamic]Primitive, len(collection.data))
 
     for &item, i in collection.data {
@@ -65,9 +65,10 @@ simplify_collection :: proc(collection: ^Collection, ctx: ^FlattenContext) -> ([
 
         if v, ok := value.(Primitive); ok {
             result[i] = v
-        } else {
-            panic("Unsupported collection item type")
+            continue
         }
+
+        panic("Unsupported collection item type")
     }
 
     return result, {}
@@ -77,8 +78,8 @@ serialize_collection :: proc(collection: ^Collection) -> Primitive {
     result := [dynamic]Primitive{}
 
     head := serialize(&collection.data[0])
-    if _should_be_escaped(head, &collection.options) {
-        head = _escape_operator(fmt.tprintf("%v", head), &collection.options)
+    if should_be_escaped(head, &collection.options) {
+        head = escape_operator(fmt.tprintf("%v", head), &collection.options)
     }
     append(&result, head)
 
@@ -100,7 +101,7 @@ to_string_collection :: proc(collection: ^Collection) -> string {
     return fmt.tprintf("[%s]", result)
 }
 
-_should_be_escaped :: proc(input: Primitive, options: ^Serialize_Options_Collection) -> bool {
+should_be_escaped :: proc(input: Primitive, options: ^Serialize_Options_Collection) -> bool {
     if input == nil {
         return false
     }
@@ -114,6 +115,6 @@ _should_be_escaped :: proc(input: Primitive, options: ^Serialize_Options_Collect
     return false;
 }
 
-_escape_operator :: proc(operator: string, options: ^Serialize_Options_Collection) -> string {
+escape_operator :: proc(operator: string, options: ^Serialize_Options_Collection) -> string {
     return fmt.tprintf("%s%s", options.escape_character, operator)
 }

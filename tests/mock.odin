@@ -19,6 +19,10 @@ col :: proc(items: ..illogical.Evaluable) -> illogical.Evaluable {
     return e
 }
 
+eq :: proc(left: illogical.Evaluable, right: illogical.Evaluable) -> illogical.Evaluable {
+    return illogical.new_eq("==", left, right)
+}
+
 and := proc(operands: ..illogical.Evaluable, operator: string = "AND") -> illogical.Evaluable {
     e, _ := illogical.new_and(operator, ..operands)
     return e

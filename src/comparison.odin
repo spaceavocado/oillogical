@@ -24,7 +24,7 @@ new_comparison :: proc(kind: string, operator: string, handler: proc([]Evaluated
 	return c
 }
 
-evaluate_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (Evaluated, Error) {
+evaluate_comparison :: proc(comparison: ^Comparison, ctx: ^Flatten_Context) -> (Evaluated, Error) {
 	evaluated := make([dynamic]Evaluated, len(comparison.operands))
     defer delete(evaluated)
 
@@ -38,7 +38,7 @@ evaluate_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (E
 	return comparison.handler(evaluated[:]), nil
 }
 
-simplify_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (Evaluated, Evaluable) {
+simplify_comparison :: proc(comparison: ^Comparison, ctx: ^Flatten_Context) -> (Evaluated, Evaluable) {
 	res := make([dynamic]Evaluated, len(comparison.operands))
 	defer delete(res)
 
@@ -55,6 +55,7 @@ simplify_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (E
 
 serialize_comparison :: proc(comparison: ^Comparison) -> Primitive {
 	res := make(Array, len(comparison.operands) + 1)
+	
 	res[0] = comparison.kind
 	for &e, i in comparison.operands {
         res[i + 1] = serialize(&e)

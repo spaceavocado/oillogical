@@ -33,11 +33,7 @@ test_in_handler :: proc(t: ^testing.T) {
 
 		testing.expectf(t, matches_evaluated(evaluated, test.expected), "input (%v, %v): expected %v, got %v", test.left, test.right, test.expected, evaluated)
 
-        if arr, ok := test.left.(illogical.Array); ok {
-            delete(arr)
-        }
-        if arr, ok := test.right.(illogical.Array); ok {
-            delete(arr)
-        }
+        illogical.destroy_evaluated(test.left)
+		illogical.destroy_evaluated(test.right)
 	}
 }
