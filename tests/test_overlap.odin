@@ -23,9 +23,9 @@ test_overlap_handler :: proc(t: ^testing.T) {
 		{illogical.Array{1.1}, illogical.Array{1.1}, true},
 		// Falsy
         {illogical.Array{1}, illogical.Array{2}, false},
-		{illogical.new_primitive(1), illogical.Array{1}, false},
-		{illogical.Array{1}, illogical.new_primitive(1), false},
-		{illogical.new_primitive("1"), illogical.new_primitive("1"), false},
+		{illogical.Primitive(i64(1)), illogical.Array{1}, false},
+		{illogical.Array{1}, illogical.Primitive(i64(1)), false},
+		{illogical.Primitive("1"), illogical.Primitive("1"), false},
 	}
 
 	for test in tests {

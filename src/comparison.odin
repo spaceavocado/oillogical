@@ -45,7 +45,7 @@ simplify_comparison :: proc(comparison: ^Comparison, ctx: ^Flatten_Context) -> (
 	for &e, i in comparison.operands {
 		val, e := simplify(&e, ctx)
 		if e != nil {
-			return {}, comparison^
+			return {}, clone_evaluable(comparison^)
 		}
 		res[i] = val
 	}
@@ -73,13 +73,13 @@ to_string_comparison :: proc(comparison: ^Comparison) -> string {
 
 compare_primitives :: proc(
     a: Evaluated, b: Evaluated,
-    as_int: proc(int, int) -> Evaluated = nil,
+    as_int: proc(i64, i64) -> Evaluated = nil,
     as_float: proc(f64, f64) -> Evaluated = nil,
     as_string: proc(string, string) -> Evaluated = nil,
     as_bool: proc(bool, bool) -> Evaluated = nil,
 ) -> Evaluated {
-    if a, ok := a.(Primitive).(int); ok && as_int != nil {
-        if b, ok := b.(Primitive).(int); ok {
+    if a, ok := a.(Primitive).(i64); ok && as_int != nil {
+        if b, ok := b.(Primitive).(i64); ok {
             return as_int(a, b)
         }
         if b, ok := b.(Primitive).(f64); ok {
@@ -90,7 +90,7 @@ compare_primitives :: proc(
         if b, ok := b.(Primitive).(f64); ok {
             return as_float(a, b)
         }
-        if b, ok := b.(Primitive).(int); ok {
+        if b, ok := b.(Primitive).(i64); ok {
             return as_float(a, f64(b))
         }
     }

@@ -136,8 +136,7 @@ test_reference_simplify :: proc(t: ^testing.T) {
 		ignored_paths_rx = [dynamic]regex.Regular_Expression{rx},
 	}
 
-    defer delete(simplify_options.ignored_paths)
-    defer delete(simplify_options.ignored_paths_rx)
+	defer illogical.destroy_simplify_options_reference(&simplify_options)
     defer regex.destroy_regex(rx)
 
     ctx := illogical.Flatten_Context{
@@ -502,8 +501,7 @@ test_reference_is_ignored_path :: proc(t: ^testing.T) {
 		ignored_paths_rx = [dynamic]regex.Regular_Expression{rx},
 	}
 
-    defer delete(simplify_options.ignored_paths)
-    defer delete(simplify_options.ignored_paths_rx)
+	defer illogical.destroy_simplify_options_reference(&simplify_options)
     defer regex.destroy_regex(rx)
 
 	tests := []struct {

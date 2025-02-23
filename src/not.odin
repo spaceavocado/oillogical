@@ -18,7 +18,7 @@ handler_not :: proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated,
 
 simplify_not :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Evaluable) {
     res, e := simplify(&operands[0], ctx)
-    if b, ok := res.(Primitive).(bool); ok {
+    if b, ok := as_evaluated_bool(&res); ok {
         return !b, nil
     }
 

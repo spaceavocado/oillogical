@@ -35,7 +35,7 @@ test_gt_handler :: proc(t: ^testing.T) {
 
 		testing.expectf(t, matches_evaluated(evaluated, test.expected), "input (%v, %v): expected %v, got %v", test.left, test.right, test.expected, evaluated)
 
-        illogical.destroy_primitive(test.left)
-		illogical.destroy_primitive(test.right)
+        illogical.destroy_evaluated(test.left)
+		illogical.destroy_evaluated(test.right)
 	}
 }

@@ -12,4 +12,5 @@ Error :: enum {
 	Invalid_Undefined_Operand,
 	Unexpected_Logical_Expression,
 	Unexpected_Input,
+	Invalid_Expression,
 }

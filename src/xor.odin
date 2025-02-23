@@ -34,7 +34,7 @@ handler_xor :: proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated,
 		}
 	}
 
-	return new_primitive(xor), nil
+	return Primitive(xor), nil
 }
 
 simplify_xor :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable, not_operator: string, nor_operator: string) -> (Evaluated, Evaluable) {
@@ -45,7 +45,7 @@ simplify_xor :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evalua
 
 	for &e in operands {
 		res, e := simplify(&e, ctx)
-		if b, ok := res.(Primitive).(bool); ok {
+		if b, ok := as_evaluated_bool(&res); ok {
 			if b {
 				truthy += 1
 			}

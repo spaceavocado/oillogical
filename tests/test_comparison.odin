@@ -85,6 +85,7 @@ test_comparison_simplify :: proc(t: ^testing.T) {
 
         illogical.destroy_evaluable(&e)
         illogical.destroy_evaluable(&test.e)
+		illogical.destroy_evaluable(&self)
 	}
 }
 
@@ -135,7 +136,7 @@ test_comparison_string :: proc(t: ^testing.T) {
 
 @test
 test_comparison_compare_primitives :: proc(t: ^testing.T) {
-	compare_int := proc(a: int, b: int) -> illogical.Evaluated { return a == b }
+	compare_int := proc(a: i64, b: i64) -> illogical.Evaluated { return a == b }
     compare_float := proc(a: f64, b: f64) -> illogical.Evaluated { return a == b }
     compare_string := proc(a: string, b: string) -> illogical.Evaluated { return a == b }
     compare_bool := proc(a: bool, b: bool) -> illogical.Evaluated { return a == b }
@@ -146,19 +147,19 @@ test_comparison_compare_primitives :: proc(t: ^testing.T) {
 		expected: illogical.Evaluated,
 	}{
 		// Truthy
-		{illogical.new_primitive(1), illogical.new_primitive(1), illogical.new_primitive(true)},
-		{illogical.new_primitive(1.0), illogical.new_primitive(1.0), illogical.new_primitive(true)},
-		{illogical.new_primitive(1.0), illogical.new_primitive(1), illogical.new_primitive(true)},
-		{illogical.new_primitive(1), illogical.new_primitive(1.0), illogical.new_primitive(true)},
-		{illogical.new_primitive(true), illogical.new_primitive(true), illogical.new_primitive(true)},
-		{illogical.new_primitive(false), illogical.new_primitive(false), illogical.new_primitive(true)},
-		{illogical.new_primitive("value"), illogical.new_primitive("value"), illogical.new_primitive(true)},		
+		{illogical.Primitive(i64(1)), illogical.Primitive(i64(1)), illogical.Primitive(true)},
+		{illogical.Primitive(1.0), illogical.Primitive(1.0), illogical.Primitive(true)},
+		{illogical.Primitive(1.0), illogical.Primitive(i64(1)), illogical.Primitive(true)},
+		{illogical.Primitive(i64(1)), illogical.Primitive(1.0), illogical.Primitive(true)},
+		{illogical.Primitive(true), illogical.Primitive(true), illogical.Primitive(true)},
+		{illogical.Primitive(false), illogical.Primitive(false), illogical.Primitive(true)},
+		{illogical.Primitive("value"), illogical.Primitive("value"), illogical.Primitive(true)},		
 		// Falsy
-		{illogical.new_primitive(1), illogical.new_primitive(2), illogical.new_primitive(false)},
-		{illogical.new_primitive(1.0), illogical.new_primitive(2.0), illogical.new_primitive(false)},
-		{illogical.new_primitive(1.0), illogical.new_primitive(2), illogical.new_primitive(false)},
-		{illogical.new_primitive(1), illogical.new_primitive(2.0), illogical.new_primitive(false)},
-		{illogical.new_primitive(true), illogical.new_primitive(false), illogical.new_primitive(false)},
+		{illogical.Primitive(i64(1)), illogical.Primitive(i64(2)), illogical.Primitive(false)},
+		{illogical.Primitive(1.0), illogical.Primitive(2.0), illogical.Primitive(false)},
+		{illogical.Primitive(1.0), illogical.Primitive(i64(2)), illogical.Primitive(false)},
+		{illogical.Primitive(i64(1)), illogical.Primitive(2.0), illogical.Primitive(false)},
+		{illogical.Primitive(true), illogical.Primitive(false), illogical.Primitive(false)},
 	}
 
 	for test in tests {

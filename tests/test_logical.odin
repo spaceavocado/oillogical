@@ -186,3 +186,23 @@ test_logical_evaluate_operand :: proc(t: ^testing.T) {
         testing.expectf(t, err == test.expected, "input (%v, %v): expected %v, got %v", test.operator, test.operands, test.expected, err)
 	}
 }
+
+@test
+test_logical_as_evaluated_bool :: proc(t: ^testing.T) {
+    tests := []struct {
+        input: illogical.Evaluated,
+        expected: bool,
+        ok: bool,
+    } {
+        {illogical.Evaluated(true), true, true},
+        {illogical.Evaluated(false), false, true},
+        {illogical.Evaluated("true"), false, false},
+    }
+
+    for &test in tests {
+        res, ok := illogical.as_evaluated_bool(&test.input)
+
+        testing.expectf(t, res == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, res)
+        testing.expectf(t, ok == test.ok, "input (%v): expected %v, got %v", test.input, test.ok, ok)
+    }
+}

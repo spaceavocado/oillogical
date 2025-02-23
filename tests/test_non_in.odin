@@ -15,15 +15,15 @@ test_non_in_handler :: proc(t: ^testing.T) {
 		expected: illogical.Primitive,
 	}{
 		// Truthy
-		{illogical.new_primitive(0), illogical.Array{1}, true},
-		{illogical.Array{1}, illogical.new_primitive(0), true},
-		{illogical.new_primitive("0"), illogical.Array{"1"}, true},
-		{illogical.new_primitive(false), illogical.Array{true}, true},
-		{illogical.new_primitive(1.0), illogical.Array{1.1}, true},
+		{illogical.Primitive(i64(0)), illogical.Array{1}, true},
+		{illogical.Array{1}, illogical.Primitive(i64(0)), true},
+		{illogical.Primitive("0"), illogical.Array{"1"}, true},
+		{illogical.Primitive(false), illogical.Array{true}, true},
+		{illogical.Primitive(1.0), illogical.Array{1.1}, true},
 		{illogical.Array{1}, illogical.Array{1}, true},
 		// Falsy
-		{illogical.Array{1}, illogical.new_primitive(1), false},
-		{illogical.new_primitive(1), illogical.Array{1}, false},
+		{illogical.Array{1}, illogical.Primitive(i64(1)), false},
+		{illogical.Primitive(i64(1)), illogical.Array{1}, false},
 	}
 
 	for test in tests {

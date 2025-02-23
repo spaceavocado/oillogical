@@ -2,6 +2,8 @@ package illogical
 
 import "core:strings"
 import "core:fmt"
+import "base:runtime"
+import "core:reflect"
 
 create_default_operator_map :: proc() -> map[Kind]string {
     m := make(map[Kind]string)
@@ -53,18 +55,25 @@ Parser :: struct {
 new_parser :: proc(
     operator_map: ^map[Kind]string = nil,
 ) -> Parser {
-    operator_map := operator_map != nil ? operator_map^ : create_default_operator_map()
-    defer delete(operator_map)
+    _operator_map := make(map[Kind]string)
+    defer delete(_operator_map)
+    if operator_map != nil {
+        for k, v in operator_map {
+            _operator_map[k] = v
+        }
+    } else {
+        _operator_map = create_default_operator_map()
+    }
 
-    escaped_operators := make(map[string]bool, len(operator_map))
+    escaped_operators := make(map[string]bool, len(_operator_map))
     defer delete(escaped_operators)
 
-    for _, v in operator_map {
+    for _, v in _operator_map {
         escaped_operators[v] = true
     }
 
     return Parser{
-        operator_expression_factory = create_operator_expression_factory(&operator_map),
+        operator_expression_factory = create_operator_expression_factory(&_operator_map),
         serialize_options_reference = create_default_serialize_options_reference(),
         serialize_options_collection = Serialize_Options_Collection{
             escape_character = "\\",
@@ -78,8 +87,8 @@ with_serialize_options_reference :: proc(parser: ^Parser, options: Serialize_Opt
     return parser
 }
 
-with_serialize_options_collection :: proc(parser: ^Parser, options: Serialize_Options_Collection) -> ^Parser {
-    parser.serialize_options_collection = options
+with_serialize_options_collection :: proc(parser: ^Parser, escape_character: string) -> ^Parser {
+    parser.serialize_options_collection.escape_character = escape_character
     return parser
 }
 
@@ -88,7 +97,7 @@ with_simplify_options_reference :: proc(parser: ^Parser, options: Simplify_Optio
     return parser
 }
 
-parse :: proc(parser: ^Parser, input: Primitive) -> (Evaluable, Error) {
+parse_primitive :: proc(parser: ^Parser, input: Primitive) -> (Evaluable, Error) {
     if input == nil {
 		return nil, .Unexpected_Input
 	}
@@ -122,6 +131,77 @@ parse :: proc(parser: ^Parser, input: Primitive) -> (Evaluable, Error) {
     }
 
     return expression, nil
+}
+
+parse_any :: proc(parser: ^Parser, expression: any) -> (Evaluable, Error) {
+    if expression == nil {
+        return {}, .Unexpected_Input
+    }
+
+    primitive, err := any_to_primitive(expression)
+    if err != nil {
+        fmt.printf("err: %v\n", err)
+        return {}, err
+    }
+
+    return parse_primitive(parser, primitive)
+}
+
+parse :: proc{ parse_primitive, parse_any }
+
+any_to_primitive :: proc(expression: any) -> (Primitive, Error) {
+    result: Primitive
+    ti := runtime.type_info_base(type_info_of(expression.id))
+
+    #partial switch info in ti.variant {
+    case runtime.Type_Info_String:
+        result = expression.(string)
+    case runtime.Type_Info_Float:
+        result = expression.(f64)
+    case runtime.Type_Info_Integer:
+        result = expression.(i64)
+    case runtime.Type_Info_Boolean:
+        result = expression.(bool)
+    case runtime.Type_Info_Array, runtime.Type_Info_Dynamic_Array, runtime.Type_Info_Slice:
+        array := make([dynamic]Primitive, 0)
+        from := 0
+        for elem, i in reflect.iterate_array(expression, &from) {
+            item, err := any_to_primitive(elem)
+            if err != nil {
+                return result, err
+            }
+            append(&array, item)
+        }
+
+        return array, nil
+    case runtime.Type_Info_Union:
+            tag_ptr := uintptr(expression.data) + info.tag_offset
+            tag_any := any{rawptr(tag_ptr), info.tag_type.id}
+    
+            tag: i64 = -1
+            switch i in tag_any {
+            case u8:   tag = i64(i)
+            case i8:   tag = i64(i)
+            case u16:  tag = i64(i)
+            case i16:  tag = i64(i)
+            case u32:  tag = i64(i)
+            case i32:  tag = i64(i)
+            case u64:  tag = i64(i)
+            case i64:  tag = i64(i)
+            case: panic("Invalid union tag type")
+            }
+    
+            id := info.variants[tag-1].id
+            union_value, err := any_to_primitive(any{expression.data, id})
+            if err != nil {
+                return result, err
+            }
+            result = union_value
+        case:
+            return result, .Invalid_Expression
+    }
+
+    return result, nil
 }
 
 create_operator_expression_factory :: proc(operator_map: ^map[Kind]string) -> Operator_Expression_Factory {

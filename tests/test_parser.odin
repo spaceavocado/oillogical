@@ -34,6 +34,7 @@ test_parse_value :: proc(t: ^testing.T) {
 test_parse_reference :: proc(t: ^testing.T) {
 	parser := illogical.new_parser()
 	defer illogical.destroy_parser(&parser)
+
 	tests := []struct {
 		input:    illogical.Primitive,
 		expected: illogical.Evaluable
@@ -43,6 +44,8 @@ test_parse_reference :: proc(t: ^testing.T) {
 
 	for test in tests {
 		output, err := illogical.parse(&parser, test.input)
+
+		log.info(fprint(output))
 
 		testing.expectf(t, fprint(output) == fprint(test.expected), "input (%v): expected %v, got %v", test.input, test.expected, output)
 		testing.expectf(t, err == nil, "input (%v): expected %v, got %v", test.input, nil, err)
@@ -54,6 +57,8 @@ test_parse_collection :: proc(t: ^testing.T) {
     operator_map := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&operator_map)
 	defer illogical.destroy_parser(&parser)
+	defer delete(operator_map)
+
 	tests := []struct {
 		input:    illogical.Primitive,
 		expected: illogical.Evaluable
@@ -84,6 +89,7 @@ test_parse_comparison :: proc(t: ^testing.T) {
     operator_map := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&operator_map)
 	defer illogical.destroy_parser(&parser)
+	defer delete(operator_map)
 
 	tests := []struct {
 		input:    illogical.Primitive,
@@ -119,6 +125,7 @@ test_parse_logical :: proc(t: ^testing.T) {
 	operator_map := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&operator_map)
 	defer illogical.destroy_parser(&parser)
+	defer delete(operator_map)
 
 	tests := []struct {
 		input:    illogical.Primitive,
@@ -147,6 +154,7 @@ test_parse_invalid :: proc(t: ^testing.T) {
 	opts := illogical.create_default_operator_map()
 	parser := illogical.new_parser(&opts)
 	defer illogical.destroy_parser(&parser)
+	defer delete(opts)
 
 	tests := []struct {
 		input:    illogical.Primitive,

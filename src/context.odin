@@ -23,7 +23,7 @@ traverse_context :: proc(value: any, path: string, result: ^Flatten_Context) {
     case runtime.Type_Info_Float:
         result[path] = value.(f64)
     case runtime.Type_Info_Integer:
-        result[path] = value.(int)
+        result[path] = value.(i64)
     case runtime.Type_Info_Boolean:
         result[path] = value.(bool)
     case runtime.Type_Info_Array, runtime.Type_Info_Dynamic_Array, runtime.Type_Info_Slice:
@@ -58,34 +58,31 @@ traverse_context :: proc(value: any, path: string, result: ^Flatten_Context) {
     }
 }
 
-/*
-Flatten context into a map of map[property path]value.
-
-Example:
-
-ctx := Context{
-    "name":    "peter",
-    "options": []int{1, 2, 3},
-    "address": struct {
-        city    string
-        country string
-    }{
-        city:    "Toronto",
-        country: "Canada",
-    },
-}
-
-flattened = FlattenContext(ctx)
-
-flattened := Context{
-    "name":    "peter",
-    "options[0]": 1,
-    "options[1]": 2,
-    "options[2]": 3,
-    "address.city": "Toronto",
-    "address.country": "Canada",
-}
-*/
+// Flatten context into a map of map[property path]value.
+//
+// Example:
+// ctx := Flatten_Context{
+//     "name"       = "peter",
+//     "options"    = []int{1, 2, 3},
+//     "address"    = struct {
+//         city:    string,
+//         country: string
+//     }{
+//         city     = "Toronto",
+//         country  = "Canada",
+//     },
+// }
+//
+// flattened = flatten_context(ctx)
+//
+// flattened := Flatten_Context{
+//     "name"               = "peter",
+//     "options[0]"         = 1,
+//     "options[1]"         = 2,
+//     "options[2]"         = 3,
+//     "address.city"       = "Toronto",
+//     "address.country"    = "Canada",
+// }
 flatten_context :: proc(ctx: any) -> Flatten_Context {
     if ctx == nil {
         return nil

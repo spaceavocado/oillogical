@@ -29,22 +29,21 @@ Kind :: enum {
 	Suffix,
 }
 
-/*
-	Operator mapping represents a map between an expression kind and the actual
-	text literal denoting an expression.
-
-	Example:
-		["==", 1, 1] to be mapped as EQ expression would be represented as:
-
-		map[Kind]string{ Eq: "==" }
-*/
+// Operator mapping represents a map between an expression kind and the actual
+// text literal denoting an expression.
+// 
+// 	Example:
+// 		["==", 1, 1] to be mapped as EQ expression would be represented as:
+// 
+// 		map[Kind]string{ Eq: "==" }
 OperatorMapping :: map[Kind]string
 
-Integer :: int
+Integer :: i64
 Float   :: f64
 Boolean :: bool
 String  :: string
 Array   :: [dynamic]Primitive
+Object  :: map[string]Primitive
 
 Primitive :: union{
     Integer,
@@ -52,6 +51,7 @@ Primitive :: union{
     Boolean,
     String,
 	Array,
+	Object,
 }
 
 Evaluated :: union{Primitive, Array}
@@ -94,7 +94,11 @@ evaluate_with_flatten_context :: proc(evaluable: ^Evaluable, ctx: ^Flatten_Conte
 	}
 }
 
-evaluate :: proc{ evaluate_with_context, evaluate_with_any_context, evaluate_with_flatten_context }
+evaluate_with_no_context :: proc(evaluable: ^Evaluable) -> (Evaluated, Error) {
+	return evaluate_with_flatten_context(evaluable, nil)
+}
+
+evaluate :: proc{ evaluate_with_context, evaluate_with_any_context, evaluate_with_flatten_context, evaluate_with_no_context }
 
 simplify_with_context :: proc(evaluable: ^Evaluable, ctx: any) -> (Evaluated, Evaluable) {
 	flatten := flatten_context(ctx)
@@ -150,54 +154,103 @@ to_string :: proc(evaluable: ^Evaluable) -> string {
 	case Logical:
 		return to_string_logical(&e)
 	case:
+		fmt.printfln("%v", e)
 		panic("Unsupported evaluable type")
     }
 }
 
-/*
-	Free all data allocated by the evaluable and its children.
-*/
+// Free all data allocated by the evaluable
 destroy_evaluable :: proc(evaluable: ^Evaluable) {
     #partial switch &e in evaluable {
 	case Collection:
+		// fmt.printf("destroy collection\n")
 		for &item in e.data {
+			// fmt.printf("destroy collection item\n")
 			destroy_evaluable(&item)
 		}
+		// fmt.printf("destroy collection data, len: %d\n", len(e.data))
 		delete(e.data)
+		// fmt.printf("!!!!destroy collection done\n")
 	case Comparison:
-		for &operand in e.operands {
+		// fmt.printf("destroy comparison\n")
+		for &operand, i in e.operands {
+			// fmt.printf("op: %d/%d\n", i, len(e.operands))
+			// fmt.printf("destroy comparison operand\n")
 			destroy_evaluable(&operand)
 		}
 		delete(e.operands)
+		// fmt.printf("!!!!destroy comparison done\n")
 	case Logical:
 		for &operand in e.operands {
 			destroy_evaluable(&operand)
 		}
 		delete(e.operands)
-    }	
+	case:
+		// fmt.printf("--destroy evaluable\n")
+    }
 }
 
-destroy_evaluated :: proc(a: Evaluated) {
-	if p, ok := a.(Primitive); ok {
-		destroy_primitive(p)
-	}
-	if arr, ok := a.(Array); ok {
-		for item in arr {
+// Free all data allocated by the evaluated
+destroy_evaluated :: proc(evaluated: Evaluated) {
+	#partial switch t in evaluated {
+	case Primitive:
+		destroy_primitive(t)
+	case Array:
+		for item in t {
 			destroy_primitive(item)
 		}
-		delete(arr)
+		delete(t)
 	}
 }
 
-destroy_primitive :: proc(a: Primitive) {
-	if arr, ok := a.(Array); ok {
-		for item in arr {
+// Free all data allocated by the primitive
+destroy_primitive :: proc(primitive: Primitive) {
+	#partial switch t in primitive {
+	case Array:
+		for item in t {
 			destroy_primitive(item)
 		}
-		delete(arr)
+		delete(t)
+	case Object:
+		for key, value in t {
+			destroy_primitive(value)
+		}
+		delete(t)
 	}
 }
 
-new_primitive :: proc(a: Primitive) -> Primitive {
-	return a
+@(require_results)
+clone_evaluable :: proc(evaluable: Evaluable) -> Evaluable {
+	#partial switch &e in evaluable {
+	case Collection:
+		items := make([dynamic]Evaluable, len(e.data))
+		defer delete(items)
+
+		for item, i in e.data {
+			items[i] = clone_evaluable(item)
+		}
+
+		collection, _ := new_collection(..items[:], options=&e.options)
+		return collection
+	case Comparison:
+		operands := make([dynamic]Evaluable, len(e.operands))
+		defer delete(operands)
+
+		for operand, i in e.operands {
+			operands[i] = clone_evaluable(operand)
+		}
+
+		return new_comparison(e.kind.(string), e.operator, e.handler, ..operands[:])
+	case Logical:
+		operands := make([dynamic]Evaluable, len(e.operands))
+		defer delete(operands)
+
+		for operand, i in e.operands {
+			operands[i] = clone_evaluable(operand)
+		}
+
+		return new_logical(e.kind.(string), e.operator, e.not_operator, e.nor_operator, e.handler, e.simplify_handler, ..operands[:])
+	case:
+		return e
+	}
 }

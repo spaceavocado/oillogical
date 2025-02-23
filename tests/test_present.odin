@@ -14,10 +14,10 @@ test_present_handler :: proc(t: ^testing.T) {
 		expected: illogical.Primitive,
 	}{
         // Truthy
-		{illogical.new_primitive(1), true},
-		{illogical.new_primitive(1.1), true},
-		{illogical.new_primitive("1"), true},
-		{illogical.new_primitive(true), true},
+		{illogical.Primitive(i64(1)), true},
+		{illogical.Primitive(1.1), true},
+		{illogical.Primitive("1"), true},
+		{illogical.Primitive(true), true},
         // Falsy
 		{nil, false},
 	}

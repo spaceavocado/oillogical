@@ -139,7 +139,7 @@ resolve_reference :: proc(ctx: ^Flatten_Context, path: string, data_type: Data_T
 
 as_number :: proc(value: Primitive) -> (Primitive, Error) { 
     switch v in value {
-    case int, f64:
+    case i64, f64:
         return v, .None
     case string:
         if strings.contains(v, ".") {
@@ -150,6 +150,8 @@ as_number :: proc(value: Primitive) -> (Primitive, Error) {
         return v ? 1 : 0, .None
     case Array:
         return nil, .Invalid_Data_Type_Conversion
+    case Object:
+        return nil, .Invalid_Data_Type_Conversion
     case:
         return nil, .Invalid_Data_Type_Conversion
     }
@@ -157,16 +159,18 @@ as_number :: proc(value: Primitive) -> (Primitive, Error) {
 
 as_integer :: proc(value: Primitive) -> (Primitive, Error) {
     switch v in value {
-    case int:
+    case i64:
         return v, .None
     case f64:
-        return int(v), .None
+        return i64(v), .None
     case string:
         return as_int_from_string(v)
     case bool:
         return v ? 1 : 0, .None
     case Array:
         return nil, .Invalid_Data_Type_Conversion        
+    case Object:
+        return nil, .Invalid_Data_Type_Conversion
     case:
         return nil, .Invalid_Data_Type_Conversion
     }
@@ -176,13 +180,15 @@ as_float :: proc(value: Primitive) -> (Primitive, Error) {
     switch v in value {
     case f64:
         return v, .None
-    case int:
+    case i64:
         return f64(v), .None
     case string:
         return as_float_from_string(v)
     case bool:
         return nil, .Invalid_Data_Type_Conversion
     case Array:
+        return nil, .Invalid_Data_Type_Conversion
+    case Object:
         return nil, .Invalid_Data_Type_Conversion
     case:
         return nil, .Invalid_Data_Type_Conversion
@@ -193,7 +199,7 @@ as_boolean :: proc(value: Primitive) -> (Primitive, Error) {
     switch v in value {
     case bool:
         return v, .None
-    case int:
+    case i64:
         if v == 0 {
             return false, .None
         } else if v == 1 {
@@ -215,6 +221,8 @@ as_boolean :: proc(value: Primitive) -> (Primitive, Error) {
         return nil, .Invalid_Data_Type_Conversion
     case Array:
         return nil, .Invalid_Data_Type_Conversion
+    case Object:
+        return nil, .Invalid_Data_Type_Conversion
     case:
         return nil, .Invalid_Data_Type_Conversion
     }
@@ -224,7 +232,7 @@ as_string :: proc(value: Primitive) -> (Primitive, Error) {
     switch v in value {
     case string:
         return v, .None
-    case int:
+    case i64:
         return fmt.tprintf("%d", v), .None
     case f64:
         return fmt.tprintf("%f", v), .None
@@ -232,17 +240,19 @@ as_string :: proc(value: Primitive) -> (Primitive, Error) {
         return fmt.tprintf("%t", v), .None
     case Array:
         return nil, .Invalid_Data_Type_Conversion
+    case Object:
+        return nil, .Invalid_Data_Type_Conversion
     case:
         return fmt.tprintf("%v", v), .None
     }
 }
 
-as_int_from_string :: proc(value: string) -> (int, Error) {
+as_int_from_string :: proc(value: string) -> (i64, Error) {
     if len(value) == 0 {
         return 0, .Invalid_Data_Type_Conversion
     }
 
-    sign := 1
+    sign := i64(1)
     input := value
     if value[0] == '-' {
         sign = -1
@@ -250,10 +260,10 @@ as_int_from_string :: proc(value: string) -> (int, Error) {
     }
 
     if f, ok := strconv.parse_f64(input); ok {
-        return int(f) * sign, .None
+        return i64(f) * sign, .None
     }
 
-    if val, ok := strconv.parse_int(input); ok {
+    if val, ok := strconv.parse_i64(input); ok {
         return val * sign, .None
     }
 
@@ -376,4 +386,10 @@ is_ignored_path :: proc(path: string, simplify_options: ^Simplify_Options_Refere
     }
 
     return false
+}
+
+// Free the memory allocated for the simplify options reference
+destroy_simplify_options_reference :: proc(options: ^Simplify_Options_Reference) {
+    delete(options.ignored_paths)
+    delete(options.ignored_paths_rx)
 }

@@ -30,7 +30,7 @@ simplify_and :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evalua
     
 	for &e in operands {
 		res, e := simplify(&e, ctx)
-		if b, ok := res.(Primitive).(bool); ok {
+		if b, ok := as_evaluated_bool(&res); ok {
 			if !b {
 				return false, nil
 			}
