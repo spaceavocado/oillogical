@@ -7,5 +7,8 @@ new_nil :: proc(operator: string, e: Evaluable) -> Evaluable {
 }
 
 handler_nil :: proc(operands: []Evaluated) -> Evaluated {
+    if p, ok := operands[0].(Primitive); ok && p == nil {
+        return true
+    }
     return operands[0] == nil
 }

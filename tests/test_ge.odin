@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_ge_handler :: proc(t: ^testing.T) {
@@ -25,8 +25,8 @@ test_ge_handler :: proc(t: ^testing.T) {
 		// Non comparable
 		{"val", 1, false},
         {true, 1, false},
-		{[dynamic]illogical.Primitive{1}, [dynamic]illogical.Primitive{1}, false},
-		{[dynamic]illogical.Primitive{1}, [dynamic]illogical.Primitive{1.1}, false},
+		{illogical.Array{1}, illogical.Array{1}, false},
+		{illogical.Array{1}, illogical.Array{1.1}, false},
 	}
 
 	for test in tests {
@@ -35,11 +35,7 @@ test_ge_handler :: proc(t: ^testing.T) {
 
 		testing.expectf(t, matches_evaluated(evaluated, test.expected), "input (%v, %v): expected %v, got %v", test.left, test.right, test.expected, evaluated)
 
-        if arr, ok := test.left.([dynamic]illogical.Primitive); ok {
-            delete(arr)
-        }
-        if arr, ok := test.right.([dynamic]illogical.Primitive); ok {
-            delete(arr)
-        }
+        illogical.destroy_primitive(test.left)
+		illogical.destroy_primitive(test.right)
 	}
 }

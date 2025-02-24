@@ -3,11 +3,11 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_value_evaluate :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{}
+    ctx := illogical.Flatten_Context{}
     defer delete(ctx)
 
 	tests := []struct {
@@ -33,7 +33,7 @@ test_value_evaluate :: proc(t: ^testing.T) {
 
 @test
 test_value_simplify :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{}
+    ctx := illogical.Flatten_Context{}
     defer delete(ctx)
 
 	tests := []struct {

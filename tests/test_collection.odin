@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_collection_new :: proc(t: ^testing.T) {
@@ -17,21 +17,21 @@ test_collection_new :: proc(t: ^testing.T) {
 
 @test
 test_collection_evaluate :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = "A",
     }
     defer delete(ctx)
 	
 	tests := []struct {
 		input:    []illogical.Evaluable,
-		expected: [dynamic]illogical.Primitive
+		expected: illogical.Array
 	}{
-		{[]illogical.Evaluable{val(1)}, [dynamic]illogical.Primitive{1}},
-		{[]illogical.Evaluable{val("1")}, [dynamic]illogical.Primitive{"1"}},
-		{[]illogical.Evaluable{val(true)}, [dynamic]illogical.Primitive{true}},
-		{[]illogical.Evaluable{ref("RefA")}, [dynamic]illogical.Primitive{"A"}},
-		{[]illogical.Evaluable{val(1), ref("RefA")}, [dynamic]illogical.Primitive{1, "A"}},
-		// Add a case of an expression
+		{[]illogical.Evaluable{val(1)}, illogical.Array{1}},
+		{[]illogical.Evaluable{val("1")}, illogical.Array{"1"}},
+		{[]illogical.Evaluable{val(true)}, illogical.Array{true}},
+		{[]illogical.Evaluable{ref("RefA")}, illogical.Array{"A"}},
+		{[]illogical.Evaluable{val(1), ref("RefA")}, illogical.Array{1, "A"}},
+		{[]illogical.Evaluable{eq(val(1), val(1)), ref("RefA")}, illogical.Array{true, "A"}},
 	}
 
 	for test in tests {
@@ -43,7 +43,7 @@ test_collection_evaluate :: proc(t: ^testing.T) {
 
         illogical.destroy_evaluable(&c)
         delete(test.expected)
-        delete(output.([dynamic]illogical.Primitive))
+        delete(output.(illogical.Array))
 	}
 
 	errs := []struct {
@@ -65,11 +65,10 @@ test_collection_evaluate :: proc(t: ^testing.T) {
 
 @test
 test_collection_simplify :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = "A",
     }
     defer delete(ctx)
-
 
 	tests := []struct {
 		input: []illogical.Evaluable,
@@ -77,7 +76,7 @@ test_collection_simplify :: proc(t: ^testing.T) {
 		e:     illogical.Evaluable,
 	}{
 		{[]illogical.Evaluable{ref("RefB")}, nil, col(ref("RefB"))},
-		{[]illogical.Evaluable{ref("RefA")}, [dynamic]illogical.Primitive{"A"}, nil},
+		{[]illogical.Evaluable{ref("RefA")}, illogical.Array{"A"}, nil},
 		{[]illogical.Evaluable{ref("RefA"), ref("RefB")}, nil, col(ref("RefA"), ref("RefB"))},
 	}
 
@@ -90,18 +89,15 @@ test_collection_simplify :: proc(t: ^testing.T) {
 
         illogical.destroy_evaluable(&e)
         illogical.destroy_evaluable(&test.e)
-        if array, ok := value.([dynamic]illogical.Primitive); ok {
-            delete(array)
-        }
-        if array, ok := test.value.([dynamic]illogical.Primitive); ok {
-            delete(array)
-        }
+
+		illogical.destroy_evaluated(value)
+		illogical.destroy_evaluated(test.value)
 	}
 }
 
 @test
 test_collection_serialize :: proc(t: ^testing.T) {
-	options := illogical.Serialization_Options_Collection{
+	options := illogical.Serialize_Options_Collection{
 		escaped_operators= map[string]bool{"=="= true},
 		escape_character=  "\\",
 	}
@@ -109,15 +105,15 @@ test_collection_serialize :: proc(t: ^testing.T) {
 
 	tests := []struct {
 		input:    []illogical.Evaluable,
-		expected: illogical.Evaluated,
+		expected: illogical.Array,
 	}{
-		{[]illogical.Evaluable{val(1)}, [dynamic]illogical.Primitive{1}},
-		{[]illogical.Evaluable{val("1")}, [dynamic]illogical.Primitive{"1"}},
-		{[]illogical.Evaluable{val(true)}, [dynamic]illogical.Primitive{true}},
-		{[]illogical.Evaluable{ref("RefA")}, [dynamic]illogical.Primitive{"$RefA"}},
-		{[]illogical.Evaluable{val(1), ref("RefA")}, [dynamic]illogical.Primitive{1, "$RefA"}},
-		// Add a case of an expression
-		{[]illogical.Evaluable{val("=="), val(1), val(1)}, [dynamic]illogical.Primitive{"\\==", 1, 1}},
+		{[]illogical.Evaluable{val(1)}, illogical.Array{1}},
+		{[]illogical.Evaluable{val("1")}, illogical.Array{"1"}},
+		{[]illogical.Evaluable{val(true)}, illogical.Array{true}},
+		{[]illogical.Evaluable{ref("RefA")}, illogical.Array{"$RefA"}},
+		{[]illogical.Evaluable{val(1), ref("RefA")}, illogical.Array{1, "$RefA"}},
+		{[]illogical.Evaluable{eq(val(1), val(1)), ref("RefA")}, illogical.Array{illogical.Array{"==", 1, 1}, "$RefA"}},
+		{[]illogical.Evaluable{val("=="), val(1), val(1)}, illogical.Array{"\\==", 1, 1}},
 	}
 
 	for test in tests {
@@ -127,8 +123,8 @@ test_collection_serialize :: proc(t: ^testing.T) {
 		testing.expectf(t, matches_evaluated(value.(illogical.Array), test.expected), "input (%v): expected %v, got %v", test.input, test.expected, value)
 
         illogical.destroy_evaluable(&e)
-        delete(value.([dynamic]illogical.Primitive))
-        delete(test.expected.([dynamic]illogical.Primitive))
+		illogical.destroy_primitive(value)
+		illogical.destroy_primitive(test.expected)
 	}
 }
 
@@ -143,7 +139,7 @@ test_collection_to_string :: proc(t: ^testing.T) {
 		{[]illogical.Evaluable{val(true)}, "[true]"},
 		{[]illogical.Evaluable{ref("RefA")}, "[{RefA}]"},
 		{[]illogical.Evaluable{val(1), ref("RefA")}, "[1, {RefA}]"},
-        // Add a case of an expression
+		{[]illogical.Evaluable{eq(val(1), val(1)), ref("RefA")}, "[(1 == 1), {RefA}]"},
 	}
 
 	for test in tests {
@@ -158,7 +154,7 @@ test_collection_to_string :: proc(t: ^testing.T) {
 
 @test
 test_collection_should_be_escaped :: proc(t: ^testing.T) {
-	options := illogical.Serialization_Options_Collection{
+	options := illogical.Serialize_Options_Collection{
 		escaped_operators= map[string]bool{"=="= true},
 		escape_character=  "\\",
 	}
@@ -177,7 +173,7 @@ test_collection_should_be_escaped :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-		result := illogical._should_be_escaped(test.input, &options)
+		result := illogical.should_be_escaped(test.input, &options)
 
 		testing.expectf(t, result == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, result)
 	}
@@ -185,7 +181,7 @@ test_collection_should_be_escaped :: proc(t: ^testing.T) {
 
 @test
 test_collection_escape_operator :: proc(t: ^testing.T) {
-	options := illogical.Serialization_Options_Collection{
+	options := illogical.Serialize_Options_Collection{
 		escaped_operators= map[string]bool{"=="= true},
 		escape_character=  "*",
 	}
@@ -199,7 +195,7 @@ test_collection_escape_operator :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-		result := illogical._escape_operator(test.input, &options)
+		result := illogical.escape_operator(test.input, &options)
 
 		testing.expectf(t, result == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, result)
 	}

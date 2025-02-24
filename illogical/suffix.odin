@@ -8,6 +8,6 @@ new_suffix :: proc(operator: string, left: Evaluable, right: Evaluable) -> Evalu
 }
 
 handler_suffix :: proc(operands: []Evaluated) -> Evaluated {
-    as_string := proc(a: string, b: string) -> Evaluated { return new_primitive(strings.has_suffix(a, b)) }
+    as_string := proc(a: string, b: string) -> Evaluated { return Primitive(strings.has_suffix(a, b)) }
     return compare_primitives(operands[0], operands[1], as_string=as_string)
 }

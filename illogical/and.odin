@@ -11,7 +11,7 @@ new_and :: proc(operator: string, operands: ..Evaluable) -> (Evaluable, Error) {
     return new_logical(operator, "AND", "N/A", "N/A", handler_and, simplify_handler, ..operands), nil
 }
 
-handler_and :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Error) {
+handler_and :: proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Error) {
     for &e in operands {
 		res, err := evaluate_logical_operand(&e, ctx)
 		if err != nil {
@@ -24,13 +24,13 @@ handler_and :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, 
 	return true, nil
 }
 
-simplify_and :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Evaluable) {
+simplify_and :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Evaluable) {
     simplified := make([dynamic]Evaluable)
     defer delete(simplified)
     
 	for &e in operands {
 		res, e := simplify(&e, ctx)
-		if b, ok := res.(Primitive).(bool); ok {
+		if b, ok := as_evaluated_bool(&res); ok {
 			if !b {
 				return false, nil
 			}

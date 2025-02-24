@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_or_new :: proc(t: ^testing.T) {
@@ -16,7 +16,7 @@ test_or_new :: proc(t: ^testing.T) {
 
 @test
 test_or_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = 10,
     }
     defer delete(ctx)
@@ -56,7 +56,7 @@ test_or_handler :: proc(t: ^testing.T) {
 
 @test
 test_or_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"RefA" = true,
 	}
 	defer delete(ctx)
@@ -71,11 +71,11 @@ test_or_simplify :: proc(t: ^testing.T) {
 		{[]illogical.Evaluable{val(false), val(false)}, false, nil},
 		{[]illogical.Evaluable{ref("RefA"), val(false)}, true, nil},
 		{[]illogical.Evaluable{ref("Missing"), val(false)}, nil, ref("Missing")},
-		{[]illogical.Evaluable{ref("Missing"), ref("Missing")}, nil, or([]illogical.Evaluable{ref("Missing"), ref("Missing")})},
+		{[]illogical.Evaluable{ref("Missing"), ref("Missing")}, nil, or(ref("Missing"), ref("Missing"))},
 	}
 
 	for &test in tests {
-        e := or(test.input)
+        e := or(..test.input)
 		value, self := illogical.simplify(&e, &ctx)
 
 		testing.expectf(t, matches_evaluated(value, test.value), "input (%v): expected %v, got %v", test.input, test.value, value)

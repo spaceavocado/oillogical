@@ -24,7 +24,7 @@ new_comparison :: proc(kind: string, operator: string, handler: proc([]Evaluated
 	return c
 }
 
-evaluate_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (Evaluated, Error) {
+evaluate_comparison :: proc(comparison: ^Comparison, ctx: ^Flatten_Context) -> (Evaluated, Error) {
 	evaluated := make([dynamic]Evaluated, len(comparison.operands))
     defer delete(evaluated)
 
@@ -38,14 +38,14 @@ evaluate_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (E
 	return comparison.handler(evaluated[:]), nil
 }
 
-simplify_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (Evaluated, Evaluable) {
+simplify_comparison :: proc(comparison: ^Comparison, ctx: ^Flatten_Context) -> (Evaluated, Evaluable) {
 	res := make([dynamic]Evaluated, len(comparison.operands))
 	defer delete(res)
 
 	for &e, i in comparison.operands {
 		val, e := simplify(&e, ctx)
 		if e != nil {
-			return {}, comparison^
+			return {}, clone_evaluable(comparison^)
 		}
 		res[i] = val
 	}
@@ -55,6 +55,7 @@ simplify_comparison :: proc(comparison: ^Comparison, ctx: ^FlattenContext) -> (E
 
 serialize_comparison :: proc(comparison: ^Comparison) -> Primitive {
 	res := make(Array, len(comparison.operands) + 1)
+	
 	res[0] = comparison.kind
 	for &e, i in comparison.operands {
         res[i + 1] = serialize(&e)
@@ -72,13 +73,13 @@ to_string_comparison :: proc(comparison: ^Comparison) -> string {
 
 compare_primitives :: proc(
     a: Evaluated, b: Evaluated,
-    as_int: proc(int, int) -> Evaluated = nil,
+    as_int: proc(i64, i64) -> Evaluated = nil,
     as_float: proc(f64, f64) -> Evaluated = nil,
     as_string: proc(string, string) -> Evaluated = nil,
     as_bool: proc(bool, bool) -> Evaluated = nil,
 ) -> Evaluated {
-    if a, ok := a.(Primitive).(int); ok && as_int != nil {
-        if b, ok := b.(Primitive).(int); ok {
+    if a, ok := a.(Primitive).(i64); ok && as_int != nil {
+        if b, ok := b.(Primitive).(i64); ok {
             return as_int(a, b)
         }
         if b, ok := b.(Primitive).(f64); ok {
@@ -89,7 +90,7 @@ compare_primitives :: proc(
         if b, ok := b.(Primitive).(f64); ok {
             return as_float(a, b)
         }
-        if b, ok := b.(Primitive).(int); ok {
+        if b, ok := b.(Primitive).(i64); ok {
             return as_float(a, f64(b))
         }
     }

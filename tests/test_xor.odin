@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_xor_new :: proc(t: ^testing.T) {
@@ -16,7 +16,7 @@ test_xor_new :: proc(t: ^testing.T) {
 
 @test
 test_xor_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "refA" = 10,
     }
     defer delete(ctx)
@@ -64,7 +64,7 @@ test_xor_handler :: proc(t: ^testing.T) {
 
 @test
 test_xor_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"refA" = true,
 	}
 	defer delete(ctx)
@@ -76,15 +76,15 @@ test_xor_simplify :: proc(t: ^testing.T) {
 	}{
 		{[]illogical.Evaluable{val(false), val(false)}, false, nil},
 		{[]illogical.Evaluable{ref("refA"), val(true)}, false, nil},
-		{[]illogical.Evaluable{ref("Missing"), val(true), ref("Missing")}, nil, nor([]illogical.Evaluable{ref("Missing"), ref("Missing")})},
+		{[]illogical.Evaluable{ref("Missing"), val(true), ref("Missing")}, nil, nor(ref("Missing"), ref("Missing"))},
 		{[]illogical.Evaluable{ref("Missing"), val(true), val(false)}, nil, not(ref("Missing"))},
 		{[]illogical.Evaluable{ref("refA"), ref("refA"), val(true)}, false, nil},
 		{[]illogical.Evaluable{val(false), ref("Missing")}, nil, ref("Missing")},
-		{[]illogical.Evaluable{ref("Missing"), ref("Missing")}, nil, xor([]illogical.Evaluable{ref("Missing"), ref("Missing")})},
+		{[]illogical.Evaluable{ref("Missing"), ref("Missing")}, nil, xor(ref("Missing"), ref("Missing"))},
 	}
 
 	for &test in tests {
-        e := xor(test.input)
+        e := xor(..test.input)
 		value, self := illogical.simplify(&e, &ctx)
 
 		testing.expectf(t, matches_evaluated(value, test.value), "input (%v): expected %v, got %v", test.input, test.value, value)

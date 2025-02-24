@@ -14,8 +14,7 @@ joinPath :: proc(a, b: string) -> string {
     return fmt.tprintf("%s.%s", a, b)
 }
 
-// Lookup a value in a context and store the result in a flattened context.
-lookup :: proc(value: any, path: string, result: ^FlattenContext) {
+traverse_context :: proc(value: any, path: string, result: ^Flatten_Context) {
     ti := runtime.type_info_base(type_info_of(value.id))
 
     #partial switch info in ti.variant {
@@ -24,18 +23,18 @@ lookup :: proc(value: any, path: string, result: ^FlattenContext) {
     case runtime.Type_Info_Float:
         result[path] = value.(f64)
     case runtime.Type_Info_Integer:
-        result[path] = value.(int)
+        result[path] = value.(i64)
     case runtime.Type_Info_Boolean:
         result[path] = value.(bool)
     case runtime.Type_Info_Array, runtime.Type_Info_Dynamic_Array, runtime.Type_Info_Slice:
         from := 0
         for elem, i in reflect.iterate_array(value, &from) {
-            lookup(elem, fmt.tprintf("%s[%d]", path, i), result)
+            traverse_context(elem, fmt.tprintf("%s[%d]", path, i), result)
         }
     case runtime.Type_Info_Map:
         from := 0
         for k, v in reflect.iterate_map(value, &from) {
-            lookup(v, joinPath(path, fmt.tprintf("%v", k)), result)
+            traverse_context(v, joinPath(path, fmt.tprintf("%v", k)), result)
         }
     case runtime.Type_Info_Union:
         tag_ptr := uintptr(value.data) + info.tag_offset
@@ -55,49 +54,46 @@ lookup :: proc(value: any, path: string, result: ^FlattenContext) {
         }
 
         id := info.variants[tag-1].id
-        lookup(any{value.data, id}, path, result)
+        traverse_context(any{value.data, id}, path, result)
     }
 }
 
-/*
-Flatten context into a map of map[property path]value.
-
-Example:
-
-ctx := Context{
-    "name":    "peter",
-    "options": []int{1, 2, 3},
-    "address": struct {
-        city    string
-        country string
-    }{
-        city:    "Toronto",
-        country: "Canada",
-    },
-}
-
-flattened = FlattenContext(ctx)
-
-flattened := Context{
-    "name":    "peter",
-    "options[0]": 1,
-    "options[1]": 2,
-    "options[2]": 3,
-    "address.city": "Toronto",
-    "address.country": "Canada",
-}
-*/
-flattenContext :: proc(ctx: any) -> FlattenContext {
+// Flatten context into a map of map[property path]value.
+//
+// Example:
+// ctx := Flatten_Context{
+//     "name"       = "peter",
+//     "options"    = []int{1, 2, 3},
+//     "address"    = struct {
+//         city:    string,
+//         country: string
+//     }{
+//         city     = "Toronto",
+//         country  = "Canada",
+//     },
+// }
+//
+// flattened = flatten_context(ctx)
+//
+// flattened := Flatten_Context{
+//     "name"               = "peter",
+//     "options[0]"         = 1,
+//     "options[1]"         = 2,
+//     "options[2]"         = 3,
+//     "address.city"       = "Toronto",
+//     "address.country"    = "Canada",
+// }
+flatten_context :: proc(ctx: any) -> Flatten_Context {
     if ctx == nil {
         return nil
     }
 
-    if ctx.id == FlattenContext {
-        return ctx.(FlattenContext)
+    if ctx.id == Flatten_Context {
+        return ctx.(Flatten_Context)
     }
 
-    result := make(FlattenContext)
-    lookup(ctx, "", &result)
+    result := make(Flatten_Context)
+    traverse_context(ctx, "", &result)
 
     return result
 }

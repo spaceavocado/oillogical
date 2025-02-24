@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_non_in_handler :: proc(t: ^testing.T) {
@@ -15,15 +15,15 @@ test_non_in_handler :: proc(t: ^testing.T) {
 		expected: illogical.Primitive,
 	}{
 		// Truthy
-		{illogical.new_primitive(0), illogical.Array{1}, true},
-		{illogical.Array{1}, illogical.new_primitive(0), true},
-		{illogical.new_primitive("0"), illogical.Array{"1"}, true},
-		{illogical.new_primitive(false), illogical.Array{true}, true},
-		{illogical.new_primitive(1.0), illogical.Array{1.1}, true},
+		{illogical.Primitive(i64(0)), illogical.Array{1}, true},
+		{illogical.Array{1}, illogical.Primitive(i64(0)), true},
+		{illogical.Primitive("0"), illogical.Array{"1"}, true},
+		{illogical.Primitive(false), illogical.Array{true}, true},
+		{illogical.Primitive(1.0), illogical.Array{1.1}, true},
 		{illogical.Array{1}, illogical.Array{1}, true},
 		// Falsy
-		{illogical.Array{1}, illogical.new_primitive(1), false},
-		{illogical.new_primitive(1), illogical.Array{1}, false},
+		{illogical.Array{1}, illogical.Primitive(i64(1)), false},
+		{illogical.Primitive(i64(1)), illogical.Array{1}, false},
 	}
 
 	for test in tests {
@@ -32,11 +32,7 @@ test_non_in_handler :: proc(t: ^testing.T) {
 
 		testing.expectf(t, matches_evaluated(evaluated, test.expected), "input (%v, %v): expected %v, got %v", test.left, test.right, test.expected, evaluated)
 
-        if arr, ok := test.left.(illogical.Array); ok {
-            delete(arr)
-        }
-        if arr, ok := test.right.(illogical.Array); ok {
-            delete(arr)
-        }
+        illogical.destroy_evaluated(test.left)
+		illogical.destroy_evaluated(test.right)
 	}
 }

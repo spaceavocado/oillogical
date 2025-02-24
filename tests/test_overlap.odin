@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_overlap_handler :: proc(t: ^testing.T) {
@@ -23,9 +23,9 @@ test_overlap_handler :: proc(t: ^testing.T) {
 		{illogical.Array{1.1}, illogical.Array{1.1}, true},
 		// Falsy
         {illogical.Array{1}, illogical.Array{2}, false},
-		{illogical.new_primitive(1), illogical.Array{1}, false},
-		{illogical.Array{1}, illogical.new_primitive(1), false},
-		{illogical.new_primitive("1"), illogical.new_primitive("1"), false},
+		{illogical.Primitive(i64(1)), illogical.Array{1}, false},
+		{illogical.Array{1}, illogical.Primitive(i64(1)), false},
+		{illogical.Primitive("1"), illogical.Primitive("1"), false},
 	}
 
 	for test in tests {
@@ -34,11 +34,7 @@ test_overlap_handler :: proc(t: ^testing.T) {
 
 		testing.expectf(t, matches_evaluated(evaluated, test.expected), "input (%v, %v): expected %v, got %v", test.left, test.right, test.expected, evaluated)
 
-        if arr, ok := test.left.(illogical.Array); ok {
-            delete(arr)
-        }
-        if arr, ok := test.right.(illogical.Array); ok {
-            delete(arr)
-        }
+        illogical.destroy_evaluated(test.left)
+		illogical.destroy_evaluated(test.right)
 	}
 }

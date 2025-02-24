@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_nil_handler :: proc(t: ^testing.T) {
@@ -16,10 +16,10 @@ test_nil_handler :: proc(t: ^testing.T) {
         // Truthy
 		{nil, true},
         // Falsy
-		{illogical.new_primitive(1), false},
-		{illogical.new_primitive(1.1), false},
-		{illogical.new_primitive("1"), false},
-		{illogical.new_primitive(true), false},
+		{illogical.Primitive(i64(1)), false},
+		{illogical.Primitive(1.1), false},
+		{illogical.Primitive("1"), false},
+		{illogical.Primitive(true), false},
 	}
 
 	for test in tests {

@@ -11,7 +11,7 @@ new_nor :: proc(operator: string, not_operator: string, operands: ..Evaluable) -
     return new_logical(operator, "NOR", not_operator, "N/A", handler_nor, simplify_handler, ..operands), nil
 }
 
-handler_nor :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, Error) {
+handler_nor :: proc(ctx: ^Flatten_Context, operands: []Evaluable) -> (Evaluated, Error) {
     for &e in operands {
 		res, err := evaluate_logical_operand(&e, ctx)
 		if err != nil {
@@ -24,13 +24,13 @@ handler_nor :: proc(ctx: ^FlattenContext, operands: []Evaluable) -> (Evaluated, 
 	return true, nil
 }
 
-simplify_nor :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluable, not_operator: string) -> (Evaluated, Evaluable) {
+simplify_nor :: proc(operator: string, ctx: ^Flatten_Context, operands: []Evaluable, not_operator: string) -> (Evaluated, Evaluable) {
     simplified := make([dynamic]Evaluable)
     defer delete(simplified)
     
 	for &e in operands {
 		res, e := simplify(&e, ctx)
-		if b, ok := res.(Primitive).(bool); ok {
+		if b, ok := as_evaluated_bool(&res); ok {
 			if b {
 				return false, nil
 			}
@@ -45,8 +45,7 @@ simplify_nor :: proc(operator: string, ctx: ^FlattenContext, operands: []Evaluab
 	}
 
 	if len(simplified) == 1 {
-        new_not, _ := new_not(not_operator, simplified[0])
-		return nil, new_not
+		return nil, new_not(not_operator, simplified[0])
 	}
 
     new_nor, _ := new_nor(operator, not_operator, ..simplified[:])

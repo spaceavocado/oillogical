@@ -6,7 +6,7 @@ import "core:testing"
 import "core:text/regex"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_reference_new :: proc(t: ^testing.T) {
@@ -74,7 +74,7 @@ test_reference_default_serialization_options :: proc(t: ^testing.T) {
 
 @test
 test_reference_evaluate :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
         "refA" = 1,
 		"refB.refB1" = 2,
 		"refB.refB2" = "refB1",
@@ -107,7 +107,7 @@ test_reference_evaluate :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-		_, _, value, err := illogical._evaluate_reference(&ctx, test.path, test.data_type)
+		_, _, value, err := illogical.resolve_reference(&ctx, test.path, test.data_type)
 
         testing.expectf(t, matches_primitive(value, test.expected), "input (%v, %v): expected %v, got %v", test.path, test.data_type, test.expected, value)
         testing.expectf(t, err == nil, "input (%v, %v): expected no error, got %v", test.path, test.data_type, err)
@@ -136,11 +136,10 @@ test_reference_simplify :: proc(t: ^testing.T) {
 		ignored_paths_rx = [dynamic]regex.Regular_Expression{rx},
 	}
 
-    defer delete(simplify_options.ignored_paths)
-    defer delete(simplify_options.ignored_paths_rx)
+	defer illogical.destroy_simplify_options_reference(&simplify_options)
     defer regex.destroy_regex(rx)
 
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "refA" = 1,
 		"refB.refB1" = 2,
 		"refB.refB2" = "refB1",
@@ -232,7 +231,7 @@ test_reference_data_type_to_number :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        value, err := illogical._to_number(test.input)
+        value, err := illogical.as_number(test.input)
 
 		testing.expectf(t, matches_primitive(value, test.expected), "input (%v): expected %v, got %v", test.input, test.expected, value)
 		testing.expectf(t, err == nil, "input (%v): expected no error, got %v", test.input, err)
@@ -247,7 +246,7 @@ test_reference_data_type_to_number :: proc(t: ^testing.T) {
 	}
 
 	for test in errors {
-        _, err := illogical._to_number(test.input)
+        _, err := illogical.as_number(test.input)
 
 		testing.expectf(t, err == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, err)
 	}
@@ -272,7 +271,7 @@ test_reference_data_type_to_integer :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        value, err := illogical._to_integer(test.input)
+        value, err := illogical.as_integer(test.input)
 
 		testing.expectf(t, matches_primitive(value, test.expected), "input (%v): expected %v, got %v", test.input, test.expected, value)
 		testing.expectf(t, err == nil, "input (%v): expected no error, got %v", test.input, err)
@@ -287,7 +286,7 @@ test_reference_data_type_to_integer :: proc(t: ^testing.T) {
 	}
 
 	for test in errors {
-        _, err := illogical._to_integer(test.input)
+        _, err := illogical.as_integer(test.input)
 
 		testing.expectf(t, err == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, err)
 	}
@@ -309,7 +308,7 @@ test_reference_data_type_to_float :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        value, err := illogical._to_float(test.input)
+        value, err := illogical.as_float(test.input)
 
 		testing.expectf(t, matches_primitive(value, test.expected), "input (%v): expected %v, got %v", test.input, test.expected, value)
 		testing.expectf(t, err == nil, "input (%v): expected no error, got %v", test.input, err)
@@ -325,7 +324,7 @@ test_reference_data_type_to_float :: proc(t: ^testing.T) {
 	}
 
 	for test in errors {
-        _, err := illogical._to_float(test.input)
+        _, err := illogical.as_float(test.input)
 
 		testing.expectf(t, err == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, err)
 	}
@@ -350,7 +349,7 @@ test_reference_data_type_to_boolean :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        value, err := illogical._to_boolean(test.input)
+        value, err := illogical.as_boolean(test.input)
 
 		testing.expectf(t, matches_primitive(value, test.expected), "input (%v): expected %v, got %v", test.input, test.expected, value)
 		testing.expectf(t, err == nil, "input (%v): expected no error, got %v", test.input, err)
@@ -368,7 +367,7 @@ test_reference_data_type_to_boolean :: proc(t: ^testing.T) {
 	}
 
 	for test in errors {
-        _, err := illogical._to_boolean(test.input)
+        _, err := illogical.as_boolean(test.input)
 
 		testing.expectf(t, err == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, err)
 	}
@@ -389,7 +388,7 @@ test_reference_data_type_to_string :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        value, err := illogical._to_string(test.input)
+        value, err := illogical.as_string(test.input)
 
 		testing.expectf(t, matches_primitive(value, test.expected), "input (%v): expected %v, got %v", test.input, test.expected, value)
 		testing.expectf(t, err == nil, "input (%v): expected no error, got %v", test.input, err)
@@ -398,7 +397,7 @@ test_reference_data_type_to_string :: proc(t: ^testing.T) {
 
 @test
 test_reference_context_lookup :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
         "refA" = 1,
 		"refB.refB1" = 2,
 		"refB.refB2" = "refB1",
@@ -439,7 +438,7 @@ test_reference_context_lookup :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-		found, path, value := illogical._context_lookup(test.input, &ctx)
+		found, path, value := illogical.context_lookup(test.input, &ctx)
 
 		testing.expectf(t, found == test.found, "input (%v): expected %v, got %v", test.input, test.found, found)
 		testing.expectf(t, path == test.path, "input (%v): expected %v, got %v", test.input, test.path, path)
@@ -464,14 +463,14 @@ test_reference_get_data_type :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-		output, _ := illogical._get_data_type(test.input)
+		output, _ := illogical.get_data_type(test.input)
 
 		testing.expectf(t, output == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, output)
 	}
 
 	input := "ref.(Struct)"
     expected := illogical.Error.Invalid_Data_Type
-	output, err := illogical._get_data_type(input)
+	output, err := illogical.get_data_type(input)
 
 	testing.expectf(t, err == expected, "input (%v): expected %v, got %v", input, expected, output)
 }
@@ -488,7 +487,7 @@ test_reference_trim_data_type :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        output := illogical._trim_data_type(test.input)
+        output := illogical.trim_data_type(test.input)
 
 		testing.expectf(t, output == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, output)
 	}
@@ -502,8 +501,7 @@ test_reference_is_ignored_path :: proc(t: ^testing.T) {
 		ignored_paths_rx = [dynamic]regex.Regular_Expression{rx},
 	}
 
-    defer delete(simplify_options.ignored_paths)
-    defer delete(simplify_options.ignored_paths_rx)
+	defer illogical.destroy_simplify_options_reference(&simplify_options)
     defer regex.destroy_regex(rx)
 
 	tests := []struct {
@@ -517,7 +515,7 @@ test_reference_is_ignored_path :: proc(t: ^testing.T) {
 	}
 
 	for test in tests {
-        result := illogical._is_ignored_path(test.input, &simplify_options)
+        result := illogical.is_ignored_path(test.input, &simplify_options)
 		
         testing.expectf(t, result == test.expected, "input (%v): expected %v, got %v", test.input, test.expected, result)
     }

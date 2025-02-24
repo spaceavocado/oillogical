@@ -5,11 +5,11 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_not_handler :: proc(t: ^testing.T) {
-    ctx := illogical.FlattenContext{
+    ctx := illogical.Flatten_Context{
         "RefA" = 10,
     }
     defer delete(ctx)
@@ -47,7 +47,7 @@ test_not_handler :: proc(t: ^testing.T) {
 
 @test
 test_not_simplify :: proc(t: ^testing.T) {
-	ctx := illogical.FlattenContext{
+	ctx := illogical.Flatten_Context{
 		"RefA" = true,
 	}
 	defer delete(ctx)
