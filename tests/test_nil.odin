@@ -5,7 +5,7 @@ package illogical_test
 import "core:testing"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_nil_handler :: proc(t: ^testing.T) {

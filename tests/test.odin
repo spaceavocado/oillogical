@@ -2,7 +2,7 @@ package illogical_test
 
 import "core:fmt"
 
-@require import illogical "../src"
+@require import illogical "../illogical"
 
 fprint_evaluable :: proc(e: illogical.Evaluable) -> string {
     if e == nil {

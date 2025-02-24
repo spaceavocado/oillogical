@@ -6,7 +6,7 @@ import "core:testing"
 import "core:fmt"
 import "core:log"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_parse_value :: proc(t: ^testing.T) {

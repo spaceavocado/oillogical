@@ -6,7 +6,7 @@ import "core:testing"
 import "core:text/regex"
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 @test
 test_reference_new :: proc(t: ^testing.T) {

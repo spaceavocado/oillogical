@@ -2,7 +2,7 @@ package illogical_test
 
 import "core:fmt"
 
-import illogical "../src"
+import illogical "../illogical"
 
 ref :: proc(address: string) -> illogical.Evaluable {
     e, _ := illogical.new_reference(address)

@@ -2,7 +2,7 @@
 
 package main
 
-import illogical "src"
+import "illogical"
 import "core:fmt"
 import "core:encoding/json"
 import "core:strings"
@@ -40,7 +40,6 @@ basic_usage :: proc() {
 }
 
 evaluate_comparison :: proc() {
-    // Create a parser
 	parser := illogical.new_parser()
     defer illogical.destroy_parser(&parser)
     
@@ -56,7 +55,6 @@ evaluate_comparison :: proc() {
     }
     defer delete(ctx)
 
-    // Comparison expression
     expressions := []illogical.Array{
         {"==", 5, 5},
         {"==", true, true},
@@ -75,6 +73,7 @@ evaluate_comparison :: proc() {
         {"PREFIX", "bo", "bogus"},
         {"SUFFIX", "bogus", "us"},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -89,7 +88,6 @@ evaluate_comparison :: proc() {
 }
 
 evaluate_logical :: proc() {
-    // Create a parser
 	parser := illogical.new_parser()
     defer illogical.destroy_parser(&parser)
     
@@ -100,7 +98,6 @@ evaluate_logical :: proc() {
     }
     defer delete(ctx)
 
-    // Comparison expression
     expressions := []illogical.Array{
         {"AND", true, true},
         {"AND", "$active", true},
@@ -109,6 +106,7 @@ evaluate_logical :: proc() {
         {"XOR", false, true, false},
         {"NOR", false, false},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -144,6 +142,7 @@ serialize_comparison :: proc() {
         {"PREFIX", "bo", "bogus"},
         {"SUFFIX", "bogus", "us"},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -166,6 +165,7 @@ serialize_logical :: proc() {
         {"XOR", false, true, false},
         {"NOR", false, false},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -199,6 +199,7 @@ to_string_comparison :: proc() {
         {"PREFIX", "bo", "bogus"},
         {"SUFFIX", "bogus", "us"},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -221,6 +222,7 @@ to_string_logical :: proc() {
         {"XOR", false, true, false},
         {"NOR", false, false},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -233,7 +235,6 @@ to_string_logical :: proc() {
 }
 
 simplify_comparison :: proc() {
-    // Create a parser
 	parser := illogical.new_parser()
     defer illogical.destroy_parser(&parser)
     
@@ -263,6 +264,7 @@ simplify_comparison :: proc() {
         {"PREFIX", "bo", "bogus"},
         {"SUFFIX", "bogus", "uus"},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
@@ -283,7 +285,6 @@ simplify_comparison :: proc() {
 }
 
 simplify_logical :: proc() {
-    // Create a parser
 	parser := illogical.new_parser()
     defer illogical.destroy_parser(&parser)
     
@@ -305,6 +306,7 @@ simplify_logical :: proc() {
         {"XOR", "$missing", "$enabled", true},
         {"NOR", false, "$missing"},
     }
+
     for expression in expressions {
         evaluable, parse_err := illogical.parse(&parser, expression)
         assert(parse_err == nil)
